@@ -6,7 +6,7 @@ import {
   orderBy,
   onSnapshot,
   limit
-} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const username = localStorage.getItem('username');
 if (!username) {
@@ -93,3 +93,4 @@ onSnapshot(q, (snapshot) => {
   console.error('Feed error:', err);
   feedEl.innerHTML = '<div class="empty">Failed to load posts.</div>';
 });
+
