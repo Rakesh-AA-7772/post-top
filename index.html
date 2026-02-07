@@ -1,41 +1,144 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Minimal Feed</title>
+
   <style>
-    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#111}
-    body{background:#fff;margin:0;min-height:100vh}
-    header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0}
-    .brand{font-weight:700}
-    .post-btn{background:#111;color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
-    main{max-width:720px;margin:20px auto;padding:0 16px}
-    .meta{color:#555;font-size:13px;margin-bottom:8px}
-    .card{background:#fff;border:1px solid #f0f0f0;padding:12px 14px;border-radius:10px;margin-bottom:12px}
-    .name{font-weight:700}
-    .time{color:#888;font-size:12px;margin-left:8px}
-    .content{margin-top:6px;white-space:pre-wrap}
-    .empty{color:#666;text-align:center;padding:40px 0}
-    .top-info{color:#666;font-size:13px;margin-bottom:10px}
+    :root {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: #111;
+    }
+
+    body {
+      background: #fff;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .brand {
+      font-weight: 700;
+    }
+
+    .menu {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .menu a {
+      text-decoration: none;
+      font-size: 13px;
+      color: #666;
+      padding: 6px 8px;
+      border-radius: 6px;
+    }
+
+    .menu a.active {
+      color: #111;
+      font-weight: 600;
+      background: #f4f4f4;
+    }
+
+    .menu a:hover {
+      background: #f0f0f0;
+    }
+
+    .post-btn {
+      background: #111;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* Main */
+    main {
+      max-width: 720px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    .top-info {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #f0f0f0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .name {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .time {
+      color: #888;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    .content {
+      margin-top: 6px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: #666;
+      text-align: center;
+      padding: 40px 0;
+      font-size: 14px;
+    }
   </style>
 </head>
+
 <body>
+
+  <!-- Header -->
   <header>
     <div class="brand">Minimal Feed</div>
-    <div>
+
+    <nav class="menu">
+      <a href="index.html" class="active">FEED</a>
+      <a href="about.html">ABOUT</a>
       <button id="postBtn" class="post-btn">Post</button>
-    </div>
+    </nav>
   </header>
 
+  <!-- Feed -->
   <main>
-    <div class="top-info">POST SOMETHING INFORMATIVE FASTLY DAILY!!!!!!</div>
+    <div class="top-info">
+      Short posts only. No likes. No follows.
+    </div>
+
     <div id="feed"></div>
-    <div id="empty" class="empty" style="display:none;">No posts yet — be the first.</div>
+    <div id="empty" class="empty" style="display:none;">
+      No posts yet.
+    </div>
   </main>
 
+  <!-- Feed logic -->
   <script type="module" src="./feed.js"></script>
+
 </body>
 </html>
-
