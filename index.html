@@ -1,0 +1,40 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minimal Feed</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#111}
+    body{background:#fff;margin:0;min-height:100vh}
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f0f0f0}
+    .brand{font-weight:700}
+    .post-btn{background:#111;color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    main{max-width:720px;margin:20px auto;padding:0 16px}
+    .meta{color:#555;font-size:13px;margin-bottom:8px}
+    .card{background:#fff;border:1px solid #f0f0f0;padding:12px 14px;border-radius:10px;margin-bottom:12px}
+    .name{font-weight:700}
+    .time{color:#888;font-size:12px;margin-left:8px}
+    .content{margin-top:6px;white-space:pre-wrap}
+    .empty{color:#666;text-align:center;padding:40px 0}
+    .top-info{color:#666;font-size:13px;margin-bottom:10px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">Minimal Feed</div>
+    <div>
+      <button id="postBtn" class="post-btn">Post</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="top-info">Write short posts (max 300 characters). No likes, no follows.</div>
+    <div id="feed"></div>
+    <div id="empty" class="empty" style="display:none;">No posts yet — be the first.</div>
+  </main>
+
+  <script type="module" src="./feed.js"></script>
+</body>
+</html>
