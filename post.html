@@ -1,114 +1,132 @@
-// feed.js
-import { db } from './firebase.js';
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  limit
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-// get username and redirect if not set
-const username = localStorage.getItem('username');
-if (!username) {
-  window.location.href = 'name.html';
-}
-
-// show online dot in header (pure frontend indicator)
-const statusDot = document.getElementById('statusDot');
-if (statusDot) {
-  statusDot.style.display = 'inline-block';
-}
-
-// Post button
-const postBtn = document.getElementById('postBtn');
-if (postBtn) {
-  postBtn.addEventListener('click', () => {
-    window.location.href = 'post.html';
-  });
-}
-
-// Elements
-const feedEl = document.getElementById('feed');
-const emptyEl = document.getElementById('empty');
-
-// helper: simple escape to avoid XSS in name/time
-function escapeHtml(s){
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// Format timestamp -> "6 Feb, 6:12 PM"
-function formatDate(d){
-  try{
-    return new Intl.DateTimeFormat(undefined, {
-      day: 'numeric', month: 'short',
-      hour: 'numeric', minute: '2-digit'
-    }).format(d);
-  } catch(e){
-    return d.toLocaleString();
-  }
-}
-
-// create post card element
-function renderPost(doc) {
-  const data = doc.data();
-  const name = data.name || 'Unknown';
-  const content = data.content || '';
-  const ts = data.timestamp;
-
-  let timeText = '';
-  try {
-    if (ts && ts.toDate) {
-      timeText = formatDate(ts.toDate());
-    } else if (ts && ts.seconds) {
-      timeText = formatDate(new Date(ts.seconds * 1000));
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Write a Post</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#111}
+    body{background:#fff;margin:0;min-height:100vh;display:flex;flex-direction:column}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0}
+    .brand{font-weight:700}
+    .container{max-width:720px;margin:20px auto;padding:0 16px}
+    textarea{width:100%;min-height:160px;padding:12px;border-radius:10px;border:1px solid #eee;font-size:15px;resize:vertical}
+    .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .info{color:#666;font-size:13px}
+    button{background:#111;color:#fff;padding:10px 14px;border-radius:8px;border:0;cursor:pointer}
+    /* toast (reused style similar to index) */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 9999;
     }
-  } catch (e) {
-    timeText = '';
-  }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">Post</div>
+    <div><button id="cancel">Cancel</button></div>
+  </header>
 
-  const card = document.createElement('div');
-  card.className = 'card';
+  <div class="container">
+    <div id="who" style="margin-bottom:8px;color:#444"></div>
+    <textarea id="content" maxlength="300" placeholder="Write something (max 300 characters)"></textarea>
+    <div class="row">
+      <div class="info"><span id="chars">0</span>/300</div>
+      <div>
+        <button id="post">Post</button>
+      </div>
+    </div>
+  </div>
 
-  // header: name pill + time
-  const head = document.createElement('div');
-  head.innerHTML = `
-    <span class="name-pill">${escapeHtml(name)}</span>
-    <span class="time">${escapeHtml(timeText)}</span>
-  `;
+  <!-- Toast -->
+  <div id="toast" class="toast">✨ Thought shared</div>
 
-  const body = document.createElement('div');
-  body.className = 'content';
-  body.textContent = content;
+  <script type="module">
+    import { db, serverTimestamp } from './firebase.js';
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-  card.appendChild(head);
-  card.appendChild(body);
+    const username = localStorage.getItem('username');
+    if (!username) {
+      window.location.href = 'name.html';
+    }
 
-  return card;
-}
+    const who = document.getElementById('who');
+    who.textContent = `Posting as: ${username}`;
 
-// realtime listener: latest posts on top
-const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(200));
-onSnapshot(q, (snapshot) => {
-  feedEl.innerHTML = '';
+    const contentEl = document.getElementById('content');
+    const chars = document.getElementById('chars');
+    const postBtn = document.getElementById('post');
+    const cancelBtn = document.getElementById('cancel');
+    const toast = document.getElementById('toast');
 
-  if (snapshot.empty) {
-    emptyEl.style.display = 'block';
-    return;
-  } else {
-    emptyEl.style.display = 'none';
-  }
+    contentEl.addEventListener('input', () => {
+      chars.textContent = contentEl.value.length;
+    });
 
-  snapshot.forEach((doc) => {
-    const card = renderPost(doc);
-    feedEl.appendChild(card);
-  });
-}, (err) => {
-  console.error('Feed error:', err);
-  feedEl.innerHTML = '<div class="empty">Failed to load posts.</div>';
-});
+    cancelBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    let cooldown = false;
+    postBtn.addEventListener('click', async () => {
+      if (cooldown) return;
+      const text = contentEl.value.trim();
+      if (text.length === 0) {
+        alert('Please write something.');
+        contentEl.focus();
+        return;
+      }
+      if (text.length > 300) {
+        alert('Too long. Max 300 characters.');
+        return;
+      }
+
+      postBtn.disabled = true;
+      postBtn.textContent = 'Posting...';
+
+      try {
+        await addDoc(collection(db, 'posts'), {
+          name: username,
+          content: text,
+          timestamp: serverTimestamp()
+        });
+
+        // show toast for 1.5s, then redirect back to feed
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+          window.location.href = 'index.html';
+        }, 1500);
+
+        // simple cooldown to avoid double-posts
+        cooldown = true;
+        setTimeout(() => { cooldown = false; }, 15000);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to post. Check console.');
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post';
+      }
+    });
+
+    // allow Enter+Ctrl/Cmd to submit quickly
+    contentEl.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        postBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
