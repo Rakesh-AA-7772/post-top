@@ -1,107 +1,114 @@
-<!-- post.html -->
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Write a Post</title>
-  <style>
-    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#111}
-    body{background:#fff;margin:0;min-height:100vh;display:flex;flex-direction:column}
-    header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0}
-    .brand{font-weight:700}
-    .container{max-width:720px;margin:20px auto;padding:0 16px}
-    textarea{width:100%;min-height:160px;padding:12px;border-radius:10px;border:1px solid #eee;font-size:15px;resize:vertical}
-    .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-    .info{color:#666;font-size:13px}
-    button{background:#111;color:#fff;padding:10px 14px;border-radius:8px;border:0;cursor:pointer}
-  </style>
-</head>
-<body>
-  <header>
-    <div class="brand">Post</div>
-    <div><button id="cancel">Cancel</button></div>
-  </header>
+// feed.js
+import { db } from './firebase.js';
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  limit
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-  <div class="container">
-    <div id="who" style="margin-bottom:8px;color:#444"></div>
-    <textarea id="content" maxlength="300" placeholder="Write something (max 300 characters)"></textarea>
-    <div class="row">
-      <div class="info"><span id="chars">0</span>/300</div>
-      <div>
-        <button id="post">Post</button>
-      </div>
-    </div>
-  </div>
+// get username and redirect if not set
+const username = localStorage.getItem('username');
+if (!username) {
+  window.location.href = 'name.html';
+}
 
-  <script type="module">
-    import { db, serverTimestamp } from './firebase.js';
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+// show online dot in header (pure frontend indicator)
+const statusDot = document.getElementById('statusDot');
+if (statusDot) {
+  statusDot.style.display = 'inline-block';
+}
 
-    const username = localStorage.getItem('username');
-    if (!username) {
-      window.location.href = 'name.html';
+// Post button
+const postBtn = document.getElementById('postBtn');
+if (postBtn) {
+  postBtn.addEventListener('click', () => {
+    window.location.href = 'post.html';
+  });
+}
+
+// Elements
+const feedEl = document.getElementById('feed');
+const emptyEl = document.getElementById('empty');
+
+// helper: simple escape to avoid XSS in name/time
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Format timestamp -> "6 Feb, 6:12 PM"
+function formatDate(d){
+  try{
+    return new Intl.DateTimeFormat(undefined, {
+      day: 'numeric', month: 'short',
+      hour: 'numeric', minute: '2-digit'
+    }).format(d);
+  } catch(e){
+    return d.toLocaleString();
+  }
+}
+
+// create post card element
+function renderPost(doc) {
+  const data = doc.data();
+  const name = data.name || 'Unknown';
+  const content = data.content || '';
+  const ts = data.timestamp;
+
+  let timeText = '';
+  try {
+    if (ts && ts.toDate) {
+      timeText = formatDate(ts.toDate());
+    } else if (ts && ts.seconds) {
+      timeText = formatDate(new Date(ts.seconds * 1000));
     }
+  } catch (e) {
+    timeText = '';
+  }
 
-    const who = document.getElementById('who');
-    who.textContent = `Posting as: ${username}`;
+  const card = document.createElement('div');
+  card.className = 'card';
 
-    const contentEl = document.getElementById('content');
-    const chars = document.getElementById('chars');
-    const postBtn = document.getElementById('post');
-    const cancelBtn = document.getElementById('cancel');
+  // header: name pill + time
+  const head = document.createElement('div');
+  head.innerHTML = `
+    <span class="name-pill">${escapeHtml(name)}</span>
+    <span class="time">${escapeHtml(timeText)}</span>
+  `;
 
-    contentEl.addEventListener('input', () => {
-      chars.textContent = contentEl.value.length;
-    });
+  const body = document.createElement('div');
+  body.className = 'content';
+  body.textContent = content;
 
-    cancelBtn.addEventListener('click', () => {
-      window.location.href = 'index.html';
-    });
+  card.appendChild(head);
+  card.appendChild(body);
 
-    let cooldown = false;
-    postBtn.addEventListener('click', async () => {
-      if (cooldown) return;
-      const text = contentEl.value.trim();
-      if (text.length === 0) {
-        alert('Please write something.');
-        contentEl.focus();
-        return;
-      }
-      if (text.length > 300) {
-        alert('Too long. Max 300 characters.');
-        return;
-      }
+  return card;
+}
 
-      postBtn.disabled = true;
-      postBtn.textContent = 'Posting...';
+// realtime listener: latest posts on top
+const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(200));
+onSnapshot(q, (snapshot) => {
+  feedEl.innerHTML = '';
 
-      try {
-        await addDoc(collection(db, 'posts'), {
-          name: username,
-          content: text,
-          timestamp: serverTimestamp()
-        });
-        // simple cooldown to avoid double-posts
-        cooldown = true;
-        setTimeout(() => { cooldown = false; }, 15000);
-        // go back to feed
-        window.location.href = 'index.html';
-      } catch (err) {
-        console.error(err);
-        alert('Failed to post. Check console.');
-        postBtn.disabled = false;
-        postBtn.textContent = 'Post';
-      }
-    });
+  if (snapshot.empty) {
+    emptyEl.style.display = 'block';
+    return;
+  } else {
+    emptyEl.style.display = 'none';
+  }
 
-    // allow Enter+Ctrl/Cmd to submit quickly
-    contentEl.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        postBtn.click();
-      }
-    });
-  </script>
-</body>
-</html>
-
+  snapshot.forEach((doc) => {
+    const card = renderPost(doc);
+    feedEl.appendChild(card);
+  });
+}, (err) => {
+  console.error('Feed error:', err);
+  feedEl.innerHTML = '<div class="empty">Failed to load posts.</div>';
+});
