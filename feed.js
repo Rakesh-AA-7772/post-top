@@ -111,4 +111,20 @@ onSnapshot(q, (snapshot) => {
 }, (err) => {
   console.error('Feed error:', err);
   feedEl.innerHTML = '<div class="empty">Failed to load posts.</div>';
+
+  Object.entries(countMap)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5)
+    .forEach(([name,count])=>{
+      const row = document.createElement('div');
+      row.className='leader';
+      row.innerHTML = `
+        <span>${name}</span>
+        <span class="count">${count}</span>
+      `;
+      leaderboardEl.appendChild(row);
+    });
 });
+
+});
+
