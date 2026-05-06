@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reply to Post</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #f8f9fa;
+      --border: #e6e8ee;
+      --accent: #ff0b58;
+      --text: #111111;
+      --text-secondary: #666666;
+      --muted: #a0a5b0;
+      --warning: #ff6b6b;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1419;
+        --card: #1a1f26;
+        --border: #2a2f36;
+        --text: #e8eaed;
+        --text-secondary: #b0b5c0;
+        --muted: #6b7280;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: var(--text);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+    }
+
+    header button {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    header button:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(255, 11, 88, 0.04);
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 0 16px;
+      flex: 1;
+    }
+
+    .reply-context {
+      background: rgba(255, 11, 88, 0.04);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 20px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .reply-context-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .reply-context-author {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .reply-context-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    #who {
+      margin-bottom: 16px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      font-size: 16px;
+      font-family: 'Inter', inherit;
+      resize: vertical;
+      background: var(--card);
+      color: var(--text);
+      transition: all 0.2s ease;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 11, 88, 0.08);
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      gap: 16px;
+    }
+
+    .info {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    #chars {
+      font-weight: 600;
+      color: var(--text);
+      transition: color 0.2s ease;
+    }
+
+    #chars.warning {
+      color: var(--warning);
+      animation: pulse-warning 0.3s ease;
+    }
+
+    @keyframes pulse-warning {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    button#reply {
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: 0;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    button#reply:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    button#reply:active {
+      transform: translateY(0);
+    }
+
+    button#reply:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">↩️ Reply</div>
+    <div><button id="cancel">Cancel</button></div>
+  </header>
+
+  <div class="container">
+    <div id="replyContext" style="display:none;" class="reply-context">
+      <div class="reply-context-title">Replying to</div>
+      <div class="reply-context-author" id="contextAuthor"></div>
+      <div class="reply-context-text" id="contextText"></div>
+    </div>
+
+    <div id="who" style="color:var(--text-secondary)"></div>
+    <textarea id="content" maxlength="300" placeholder="What's your reply? (max 300 characters)..."></textarea>
+    <div class="row">
+      <div class="info"><span id="chars">0</span><span>/300</span></div>
+      <div>
+        <button id="reply">Reply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">✨ Reply posted</div>
+
+  <script type="module">
+    import { db, serverTimestamp } from './firebase.js';
+    import { collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const username = localStorage.getItem('username');
+    if (!username) {
+      window.location.href = 'name.html';
+    }
+
+    const replyingToId = localStorage.getItem('replyingTo');
+    const replyingToName = localStorage.getItem('replyingToName');
+    const who = document.getElementById('who');
+    who.textContent = `Replying as: ${username}`;
+
+    const contentEl = document.getElementById('content');
+    const chars = document.getElementById('chars');
+    const replyBtn = document.getElementById('reply');
+    const cancelBtn = document.getElementById('cancel');
+    const toast = document.getElementById('toast');
+    const replyContext = document.getElementById('replyContext');
+    const contextAuthor = document.getElementById('contextAuthor');
+    const contextText = document.getElementById('contextText');
+
+    // Load original post if replying
+    if (replyingToId) {
+      try {
+        const postDoc = await getDoc(doc(db, 'posts', replyingToId));
+        if (postDoc.exists()) {
+          const data = postDoc.data();
+          contextAuthor.textContent = replyingToName || 'Unknown';
+          contextText.textContent = data.content || '';
+          replyContext.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error loading post:', err);
+      }
+    }
+
+    contentEl.addEventListener('input', () => {
+      const count = contentEl.value.length;
+      chars.textContent = count;
+      
+      // Change color when near limit (75% = 225 chars)
+      if (count > 225) {
+        chars.classList.add('warning');
+      } else {
+        chars.classList.remove('warning');
+      }
+    });
+
+    // Auto focus
+    contentEl.focus();
+
+    cancelBtn.addEventListener('click', () => {
+      localStorage.removeItem('replyingTo');
+      localStorage.removeItem('replyingToName');
+      window.location.href = 'index.html';
+    });
+
+    let cooldown = false;
+    replyBtn.addEventListener('click', async () => {
+      if (cooldown) return;
+      const text = contentEl.value.trim();
+      if (text.length === 0) {
+        alert('Please write a reply 😢');
+        contentEl.focus();
+        return;
+      }
+      if (text.length > 300) {
+        alert('Too long. Max 300 characters.');
+        return;
+      }
+
+      replyBtn.disabled = true;
+      replyBtn.textContent = 'Replying...';
+
+      try {
+        await addDoc(collection(db, 'replies'), {
+          postId: replyingToId,
+          name: username,
+          content: text,
+          timestamp: serverTimestamp()
+        });
+
+        // show toast for 1.5s, then redirect back to feed
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+          localStorage.removeItem('replyingTo');
+          localStorage.removeItem('replyingToName');
+          window.location.href = 'index.html';
+        }, 1500);
+
+        // simple cooldown to avoid double-posts
+        cooldown = true;
+        setTimeout(() => { cooldown = false; }, 15000);
+      } catch (err) {
+        console.error('Reply error:', err);
+        let errorMsg = 'Failed to reply. ';
+        
+        if (err.code === 'permission-denied') {
+          errorMsg += 'Firebase permissions issue. Admin needs to update security rules. See FIREBASE_SETUP.md';
+        } else {
+          errorMsg += 'Check console for details.';
+        }
+        
+        alert(errorMsg);
+        replyBtn.disabled = false;
+        replyBtn.textContent = 'Reply';
+      }
+    });
+
+    // allow Enter+Ctrl/Cmd to submit quickly
+    contentEl.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        replyBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>

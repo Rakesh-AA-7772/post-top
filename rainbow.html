@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RAINBOW LASER SHOW 🌈</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .laser-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Animated rainbow gradient background */
+    .rainbow-bg {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      background: linear-gradient(
+        45deg,
+        #ff0000 0%,
+        #ff7f00 14.28%,
+        #ffff00 28.56%,
+        #00ff00 42.84%,
+        #0000ff 57.12%,
+        #4b0082 71.4%,
+        #9400d3 85.68%,
+        #ff0000 100%
+      );
+      animation: rainbow-rotate 4s linear infinite;
+    }
+
+    @keyframes rainbow-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Laser beam effects */
+    .laser {
+      position: absolute;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+      animation: laser-sweep 2s ease-in-out infinite;
+      box-shadow: 0 0 20px currentColor;
+    }
+
+    .laser-1 {
+      top: 20%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #ff00ff, transparent);
+      animation: laser-sweep 2s ease-in-out infinite;
+    }
+
+    .laser-2 {
+      top: 40%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #00ffff, transparent);
+      animation: laser-sweep 2.5s ease-in-out infinite;
+      animation-delay: 0.3s;
+    }
+
+    .laser-3 {
+      top: 60%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #00ff00, transparent);
+      animation: laser-sweep 2s ease-in-out infinite;
+      animation-delay: 0.6s;
+    }
+
+    .laser-4 {
+      top: 80%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, #ffff00, transparent);
+      animation: laser-sweep 2.5s ease-in-out infinite;
+      animation-delay: 0.9s;
+    }
+
+    @keyframes laser-sweep {
+      0%, 100% { transform: scaleX(0); opacity: 0; }
+      50% { transform: scaleX(1); opacity: 1; }
+    }
+
+    /* Vertical laser sweeps */
+    .vertical-laser {
+      position: absolute;
+      width: 4px;
+      height: 100%;
+      top: 0;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.8), transparent);
+      animation: vertical-sweep 3s ease-in-out infinite;
+    }
+
+    .vlaser-1 {
+      left: 25%;
+      background: linear-gradient(180deg, transparent, #ff0099, transparent);
+      animation: vertical-sweep 3s ease-in-out infinite;
+    }
+
+    .vlaser-2 {
+      left: 50%;
+      background: linear-gradient(180deg, transparent, #00ff99, transparent);
+      animation: vertical-sweep 3s ease-in-out infinite;
+      animation-delay: 0.5s;
+    }
+
+    .vlaser-3 {
+      left: 75%;
+      background: linear-gradient(180deg, transparent, #ff9900, transparent);
+      animation: vertical-sweep 3s ease-in-out infinite;
+      animation-delay: 1s;
+    }
+
+    @keyframes vertical-sweep {
+      0%, 100% { transform: scaleY(0); opacity: 0; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    /* Particle effects */
+    .particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #fff;
+      border-radius: 50%;
+      animation: particle-float 3s ease-out forwards;
+    }
+
+    @keyframes particle-float {
+      0% {
+        opacity: 1;
+        transform: translateY(0) translateX(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-100px) translateX(var(--tx)) scale(0);
+      }
+    }
+
+    /* Center text */
+    .center-content {
+      position: relative;
+      z-index: 100;
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 40px #ff00ff;
+      animation: pulse-text 0.5s ease-in-out infinite alternate;
+    }
+
+    .center-content h1 {
+      font-size: 72px;
+      margin-bottom: 20px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .center-content p {
+      font-size: 24px;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+      margin-bottom: 10px;
+    }
+
+    .countdown {
+      font-size: 36px;
+      font-weight: bold;
+      color: #ffff00;
+      text-shadow: 0 0 20px #ffff00;
+      animation: blink 0.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-text {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Screen flash effect */
+    .flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+      animation: flash-effect 0.2s ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes flash-effect {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="laser-container">
+    <div class="rainbow-bg"></div>
+    
+    <!-- Horizontal lasers -->
+    <div class="laser laser-1"></div>
+    <div class="laser laser-2"></div>
+    <div class="laser laser-3"></div>
+    <div class="laser laser-4"></div>
+    
+    <!-- Vertical lasers -->
+    <div class="vertical-laser vlaser-1"></div>
+    <div class="vertical-laser vlaser-2"></div>
+    <div class="vertical-laser vlaser-3"></div>
+    
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Center content -->
+    <div class="center-content">
+      <h1>🎆 RAINBOW MODE 🎆</h1>
+      <p>YOU'RE A TRUE LEGEND!</p>
+      <div class="countdown" id="countdown">15</div>
+    </div>
+  </div>
+
+  <script>
+    // Generate particles
+    function generateParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        const tx = (Math.random() - 0.5) * 100;
+        
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        
+        container.appendChild(particle);
+        
+        // Remove particle after animation
+        setTimeout(() => particle.remove(), 3000);
+      }
+    }
+
+    // Generate particles every 200ms
+    setInterval(generateParticles, 200);
+
+    // Countdown timer
+    let timeLeft = 15;
+    const countdownEl = document.getElementById('countdown');
+    
+    const countdownInterval = setInterval(() => {
+      timeLeft--;
+      countdownEl.textContent = timeLeft;
+      
+      // Flash effect every second
+      const flash = document.createElement('div');
+      flash.className = 'flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 200);
+      
+      if (timeLeft <= 0) {
+        clearInterval(countdownInterval);
+        // Redirect back to index after 15 seconds
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 500);
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
