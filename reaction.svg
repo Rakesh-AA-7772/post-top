@@ -1,0 +1,10 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Smiley face outline -->
+  <circle cx="12" cy="12" r="10" stroke="#ff0b58" stroke-width="1.5" fill="none"/>
+  <!-- Left eye -->
+  <circle cx="9" cy="10" r="1.5" fill="#ff0b58"/>
+  <!-- Right eye -->
+  <circle cx="15" cy="10" r="1.5" fill="#ff0b58"/>
+  <!-- Smile -->
+  <path d="M 8.5 14 Q 12 16 15.5 14" stroke="#ff0b58" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>

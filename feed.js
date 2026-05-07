@@ -86,7 +86,7 @@ if (logo) {
     document.body.appendChild(backdrop);
     document.body.appendChild(dialog);
     
-    // Auto-hide after 5 seconds
+    // Auto-hide after 1 seconds
     setTimeout(() => {
       dialog.style.animation = 'fadeOut 0.3s ease-out forwards';
       backdrop.style.animation = 'fadeOut 0.3s ease-out forwards';
@@ -94,7 +94,7 @@ if (logo) {
         dialog.remove();
         backdrop.remove();
       }, 300);
-    }, 3000);
+    }, 1000);
   });
 }
 
@@ -198,12 +198,12 @@ function renderPost(doc){
     ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="Post image" style="width:100%;max-height:300px;border-radius:12px;margin:12px 0;object-fit:cover;">` : ''}
     ${reactionsHtml}
     <div class="card-actions" style="margin-top:${Object.keys(reactions).length > 0 ? '8px' : '12px'};display:flex;gap:8px;align-items:center;">
-      <button class="card-action-emoji" style="background:transparent;border:none;padding:6px 8px;font-size:18px;cursor:pointer;border-radius:6px;transition:all 0.2s;hover-effect" onclick="event.stopPropagation(); toggleEmojiPickerFeed('${postId}');">😊</button>
+      <button class="card-action-emoji" style="background:transparent;border:none;padding:6px 8px;font-size:18px;cursor:pointer;border-radius:6px;transition:all 0.2s;" onclick="event.stopPropagation(); toggleEmojiPickerFeed('${postId}');"><img src="reaction.svg" alt="Add reaction" style="width:20px;height:20px;"></button>
       <button class="card-action-btn reply-btn" data-post-id="${escapeHtml(postId)}" onclick="event.stopPropagation();" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
         💬 <span id="reply-count-${postId}" style="font-weight:600;"></span>
       </button>
     </div>
-    <div class="emoji-picker-inline" id="picker-${postId}" style="display:none;margin-top:12px;padding:12px;background:rgba(255,11,88,0.05);border-radius:8px;border:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;justify-content:center;animation:slideIn 0.2s ease-out;">
+    <div class="emoji-picker-inline" id="picker-${postId}" style="display:none;margin-top:12px;padding:12px;background:rgba(255,11,88,0.05);border-radius:8px;border:1px solid var(--border);gap:8px;flex-wrap:wrap;justify-content:center;animation:slideIn 0.2s ease-out;">
       <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😂');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">😂</span>
       <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '💀');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">💀</span>
       <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😭');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">😭</span>
