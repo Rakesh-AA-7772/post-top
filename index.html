@@ -55,8 +55,9 @@
       font-weight: 700;
       font-size: 24px;
       display: flex;
-      align-items: center;
-      gap: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
       letter-spacing: -0.5px;
       color: var(--text);
       cursor: pointer;
@@ -72,16 +73,50 @@
       display: flex;
       gap: 3px;
       align-items: baseline;
+      height: 32px;
+      align-items: center;
     }
 
-    .brand-w { color: #4285f4; }
-    .brand-e { color: #ea4335; }
-    .brand-space { width: 4px; }
-    .brand-w2 { color: #fbbc04; }
-    .brand-r { color: #4285f4; }
-    .brand-i { color: #34a853; }
-    .brand-t { color: #ea4335; }
-    .brand-e2 { color: #fbbc04; }
+    .brand-letter {
+      font-size: 28px;
+      font-weight: 900;
+      display: inline-block;
+      position: relative;
+      background: linear-gradient(135deg, #ff0b58, #ff6b9d, #ff0b58);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: brandGradient 3s ease infinite;
+    }
+
+    @keyframes brandGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .brand-space { width: 6px; }
+
+    .tagline {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-family: 'Inter', system-ui, -apple-system;
+      background: linear-gradient(90deg, #ff0b58, #ff6b9d, #ff0b58);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: taglineGradient 4s ease infinite;
+    }
+
+    @keyframes taglineGradient {
+      0%, 100% { background-position: 0% 0%; }
+      50% { background-position: 100% 0%; }
+    }
 
     .menu{ display:flex; gap:18px; align-items:center; }
 
@@ -104,6 +139,24 @@
       background:rgba(255, 11, 88, 0.1);
       color:var(--accent);
       font-weight:600;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 11, 88, 0.05);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .user-profile:hover {
+      background: rgba(255, 11, 88, 0.1);
+      color: var(--accent);
     }
 
     .post-btn{
@@ -246,7 +299,7 @@
       border-radius: 8px;
       font-size: 12px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0.6, 0.2, 1);
       font-weight: 500;
     }
 
@@ -254,6 +307,33 @@
       color: var(--accent);
       border-color: var(--accent);
       background: rgba(255, 11, 88, 0.04);
+      transform: translateY(-1px);
+    }
+
+    .card-action-btn:active {
+      transform: translateY(0);
+    }
+
+    .card-action-emoji {
+      background: transparent;
+      border: none;
+      padding: 6px 8px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s cubic-bezier(0.2, 0.6, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-action-emoji:hover {
+      background: rgba(255, 11, 88, 0.08);
+      transform: scale(1.1);
+    }
+
+    .card-action-emoji:active {
+      transform: scale(0.95);
     }
 
     .reply-count {
@@ -437,15 +517,20 @@
   <header>
     <div class="brand" id="logo">
       <div class="brand-logo">
-        <span class="brand-w">W</span><span class="brand-e">E</span>
+        <span class="brand-letter">W</span><span class="brand-letter">E</span>
         <span class="brand-space"></span>
-        <span class="brand-w2">W</span><span class="brand-r">R</span><span class="brand-i">I</span><span class="brand-t">T</span><span class="brand-e2">E</span>
+        <span class="brand-letter">W</span><span class="brand-letter">R</span><span class="brand-letter">I</span><span class="brand-letter">T</span><span class="brand-letter">E</span>
       </div>
+      <div class="tagline">The Wall of the Internet</div>
     </div>
 
     <nav class="menu">
       <a href="index.html" class="active">FEED</a>
       <a href="about.html">ABOUT</a>
+      <div class="user-profile" id="userProfile">
+        <span>👤</span>
+        <span id="userName">User</span>
+      </div>
       <button id="postBtn" class="post-btn">Post</button>
     </nav>
   </header>

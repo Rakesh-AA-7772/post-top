@@ -219,9 +219,17 @@
 
   <div class="container">
     <div id="who" style="margin-bottom:8px;color:var(--text-secondary)"></div>
-    <textarea id="content" maxlength="300" placeholder="BRO DONT READ THIS. POST SOMETHING FAST😭😭"></textarea>
+    <textarea id="content" maxlength="300" placeholder="What's on your mind?"></textarea>
+    <div id="imagePreview" style="margin-top:16px;display:none;">
+      <img id="previewImg" style="max-width:100%;border-radius:12px;max-height:300px;object-fit:cover;" alt="Image preview">
+      <button type="button" id="removeImage" style="margin-top:10px;background:#ff6b6b;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;">Remove Image</button>
+    </div>
     <div class="row">
-      <div class="info"><span id="chars">0</span><span>/300</span></div>
+      <div class="info">
+        <label for="imageInput" style="cursor:pointer;color:var(--accent);font-weight:600;margin-right:16px;">📷 Add Image</label>
+        <input type="file" id="imageInput" accept="image/*" style="display:none;">
+        <span id="chars">0</span><span>/300</span>
+      </div>
       <div>
         <button id="post">Post</button>
       </div>
@@ -248,12 +256,44 @@
     const postBtn = document.getElementById('post');
     const cancelBtn = document.getElementById('cancel');
     const toast = document.getElementById('toast');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const removeImageBtn = document.getElementById('removeImage');
+
+    let selectedImageBase64 = null;
+
+    // Image input handler - convert to Base64
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Check file size (max 2MB for practical Firestore limits)
+        if (file.size > 2 * 1024 * 1024) {
+          alert('Image too large. Max 2MB. Please choose a smaller image.');
+          imageInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          selectedImageBase64 = event.target.result; // This is the base64 string
+          previewImg.src = selectedImageBase64;
+          imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeImageBtn.addEventListener('click', () => {
+      selectedImageBase64 = null;
+      imageInput.value = '';
+      imagePreview.style.display = 'none';
+    });
 
     contentEl.addEventListener('input', () => {
       const count = contentEl.value.length;
       chars.textContent = count;
       
-      // Change color when near limit (75% = 225 chars)
       if (count > 225) {
         chars.classList.add('warning');
       } else {
@@ -261,7 +301,6 @@
       }
     });
 
-    // Auto focus
     contentEl.focus();
 
     cancelBtn.addEventListener('click', () => {
@@ -272,13 +311,13 @@
     postBtn.addEventListener('click', async () => {
       if (cooldown) return;
       const text = contentEl.value.trim();
-      if (text.length === 0) {
-        alert('Please write something 😢');
+      if (text.length === 0 && !selectedImageBase64) {
+        alert('Please write something or upload an image 😢');
         contentEl.focus();
         return;
       }
       if (text.length > 300) {
-        alert('Too long. Max 300 characters.');
+        alert('Text is too long. Max 300 characters.');
         return;
       }
 
@@ -286,20 +325,21 @@
       postBtn.textContent = 'Posting...';
 
       try {
+        // Save post with base64 image embedded in Firestore
         await addDoc(collection(db, 'posts'), {
           name: username,
           content: text,
+          imageUrl: selectedImageBase64 || '', // Store base64 directly in Firestore
+          reactions: {},
           timestamp: serverTimestamp()
         });
 
-        // show toast for 1.5s, then redirect back to feed
         toast.classList.add('show');
         setTimeout(() => {
           toast.classList.remove('show');
           window.location.href = 'index.html';
         }, 1500);
 
-        // simple cooldown to avoid double-posts
         cooldown = true;
         setTimeout(() => { cooldown = false; }, 15000);
       } catch (err) {
@@ -310,7 +350,6 @@
       }
     });
 
-    // allow Enter+Ctrl/Cmd to submit quickly
     contentEl.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         postBtn.click();

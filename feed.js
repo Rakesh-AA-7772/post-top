@@ -7,12 +7,33 @@ import {
   onSnapshot,
   limit,
   where,
-  getDocs
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const username = localStorage.getItem('username');
 if (!username) {
   window.location.href = 'name.html';
+}
+
+// Display username in header
+const userNameEl = document.getElementById('userName');
+if (userNameEl) {
+  userNameEl.textContent = username;
+}
+
+// User profile click handler
+const userProfile = document.getElementById('userProfile');
+if (userProfile) {
+  userProfile.addEventListener('click', () => {
+    const action = confirm(`👤 ${username}\n\n[OK] Change name\n[Cancel] Close`);
+    if (action) {
+      localStorage.removeItem('username');
+      window.location.href = 'name.html';
+    }
+  });
 }
 
 // Easter egg: Track logo clicks
@@ -141,6 +162,8 @@ function renderPost(doc){
   const data = doc.data();
   const name = data.name || 'Unknown';
   const content = data.content || '';
+  const imageUrl = data.imageUrl || '';
+  const reactions = data.reactions || {};
   const ts = data.timestamp;
   const postId = doc.id;
 
@@ -154,38 +177,66 @@ function renderPost(doc){
 
   const card = document.createElement('div');
   card.className = 'card';
+  card.style.cursor = 'pointer';
+  
+  let reactionsHtml = '';
+  if (Object.keys(reactions).length > 0) {
+    reactionsHtml = '<div class="reactions-bar" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">';
+    Object.entries(reactions).forEach(([emoji, users]) => {
+      const count = Object.keys(users).length;
+      reactionsHtml += `<span style="background:rgba(255,11,88,0.08);border:1px solid var(--accent);padding:4px 8px;border-radius:999px;font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="event.stopPropagation(); toggleReactionFeed('${postId}', '${emoji}');"><span>${emoji}</span><span style="font-weight:600;">${count}</span></span>`;
+    });
+    reactionsHtml += '</div>';
+  }
+
   card.innerHTML = `
     <div>
       <span class="name-pill">${escapeHtml(name)}</span>
       <span class="time">${escapeHtml(timeText)}</span>
     </div>
     <div class="content"></div>
-    <div class="card-actions">
-      <button class="card-action-btn reply-btn" data-post-id="${escapeHtml(postId)}">
-        ↩️ Reply <span class="reply-count" data-post-id="${escapeHtml(postId)}">0</span>
+    ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="Post image" style="width:100%;max-height:300px;border-radius:12px;margin:12px 0;object-fit:cover;">` : ''}
+    ${reactionsHtml}
+    <div class="card-actions" style="margin-top:${Object.keys(reactions).length > 0 ? '8px' : '12px'};display:flex;gap:8px;align-items:center;">
+      <button class="card-action-emoji" style="background:transparent;border:none;padding:6px 8px;font-size:18px;cursor:pointer;border-radius:6px;transition:all 0.2s;hover-effect" onclick="event.stopPropagation(); toggleEmojiPickerFeed('${postId}');">😊</button>
+      <button class="card-action-btn reply-btn" data-post-id="${escapeHtml(postId)}" onclick="event.stopPropagation();" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
+        💬 <span id="reply-count-${postId}" style="font-weight:600;"></span>
       </button>
+    </div>
+    <div class="emoji-picker-inline" id="picker-${postId}" style="display:none;margin-top:12px;padding:12px;background:rgba(255,11,88,0.05);border-radius:8px;border:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;justify-content:center;animation:slideIn 0.2s ease-out;">
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😂');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">😂</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '💀');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">💀</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😭');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">😭</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '🔥');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">🔥</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '❤️');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">❤️</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '👍');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">👍</span>
     </div>
   `;
   // set content as text to preserve newlines and avoid XSS
   card.querySelector('.content').textContent = content;
   
-  // Load reply count for this post
-  loadReplyCount(postId, card.querySelector('.reply-count'));
+  // Load reply count
+  loadReplyCountFeed(postId, card.querySelector(`#reply-count-${postId}`));
+  
+  // Make the entire card clickable to view post details
+  card.addEventListener('click', () => {
+    window.location.href = `post-detail.html?id=${postId}`;
+  });
   
   // Add reply button handler
   const replyBtn = card.querySelector('.reply-btn');
-  replyBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    localStorage.setItem('replyingTo', postId);
-    localStorage.setItem('replyingToName', name);
-    window.location.href = 'reply.html';
-  });
+  if (replyBtn) {
+    replyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.href = `post-detail.html?id=${postId}`;
+    });
+  }
 
   return card;
 }
 
-// Load reply count for a post
-async function loadReplyCount(postId, countElement) {
+// Load reply count for feed
+async function loadReplyCountFeed(postId, countElement) {
   try {
     const repliesQuery = query(
       collection(db, 'replies'),
@@ -193,6 +244,7 @@ async function loadReplyCount(postId, countElement) {
     );
     const snapshot = await getDocs(repliesQuery);
     const count = snapshot.size;
+    
     if (count > 0) {
       countElement.textContent = count;
       countElement.style.display = 'inline';
@@ -201,6 +253,43 @@ async function loadReplyCount(postId, countElement) {
     console.warn('Could not load reply count:', err);
   }
 }
+
+// Toggle emoji picker inline
+window.toggleEmojiPickerFeed = function(postId) {
+  const picker = document.getElementById(`picker-${postId}`);
+  if (picker) {
+    picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+  }
+};
+
+// Add reaction from feed
+window.addReactionFeed = async function(postId, emoji) {
+  try {
+    const postRef = doc(db, 'posts', postId);
+    const postDoc = await getDoc(postRef);
+    const reactions = postDoc.data()?.reactions || {};
+
+    if (!reactions[emoji]) reactions[emoji] = {};
+
+    if (reactions[emoji][username]) {
+      delete reactions[emoji][username];
+      if (Object.keys(reactions[emoji]).length === 0) {
+        delete reactions[emoji];
+      }
+    } else {
+      reactions[emoji][username] = true;
+    }
+
+    await updateDoc(postRef, { reactions });
+    
+    // Hide picker
+    const picker = document.getElementById(`picker-${postId}`);
+    if (picker) picker.style.display = 'none';
+  } catch (err) {
+    console.error('Error adding reaction:', err);
+  }
+};
+
 
 // Firestore query: latest first
 const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(500));

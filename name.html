@@ -142,10 +142,16 @@
     <label for="name">Enter your name (displayed with posts)</label>
     <input id="name" type="text" maxlength="40" placeholder="e.g. Alex Chen" autofocus />
     <button id="continue">Continue</button>
-    <small>✨ Names are session-only (stored in your browser). No account required.</small>
+    <small>✨ Names are stored in your browser cache. Clear your browser cache to change your name. No account required.</small>
   </div>
 
   <script type="module">
+    // If user already has a name, redirect to feed
+    const existingName = localStorage.getItem('username');
+    if (existingName) {
+      window.location.href = 'index.html';
+    }
+
     const input = document.getElementById('name');
     const btn = document.getElementById('continue');
 

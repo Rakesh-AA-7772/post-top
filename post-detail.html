@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Post Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #5a818d4f;
+      --card: #ffffff;
+      --border: #e6e8ee;
+      --accent: #ff0b58;
+      --text: #111111;
+      --text-secondary: #666666;
+      --muted: #a0a5b0;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1419;
+        --card: #1a1f26;
+        --border: #2a2f36;
+        --text: #e8eaed;
+        --text-secondary: #b0b5c0;
+        --muted: #6b7280;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .brand:hover {
+      color: var(--accent);
+    }
+
+    .go-back {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .go-back:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(255, 11, 88, 0.04);
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .post-card {
+      background: var(--card);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .post-author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .name-pill {
+      font-weight: 600;
+      font-size: 13px;
+      background: rgba(255, 11, 88, 0.08);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .time {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .post-content {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 16px;
+      word-break: break-word;
+    }
+
+    .post-image {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      object-fit: cover;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    .reactions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .reaction-btn {
+      background: rgba(255, 11, 88, 0.08);
+      border: 1px solid var(--accent);
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reaction-btn:hover {
+      background: rgba(255, 11, 88, 0.15);
+      transform: scale(1.05);
+    }
+
+    .reaction-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .reaction-count {
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .emoji-picker {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 300px;
+      z-index: 1000;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .emoji-picker.show {
+      display: flex;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .emoji-option {
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    .emoji-option:hover {
+      background: rgba(255, 11, 88, 0.08);
+      transform: scale(1.2);
+    }
+
+    .add-reaction-btn {
+      background: rgba(255, 11, 88, 0.08);
+      border: 1px solid var(--accent);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      transition: all 0.2s ease;
+    }
+
+    .add-reaction-btn:hover {
+      background: rgba(255, 11, 88, 0.15);
+    }
+
+    .replies-section {
+      margin-top: 40px;
+    }
+
+    .replies-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .reply-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      animation: slideIn 0.4s ease-out;
+      transition: all 0.2s ease;
+    }
+
+    .reply-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(255, 11, 88, 0.08);
+    }
+
+    .reply-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .reply-author {
+      font-weight: 600;
+      font-size: 13px;
+      background: rgba(255, 11, 88, 0.08);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .reply-time {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .reply-content {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .reply-form {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 24px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Inter', inherit;
+      resize: vertical;
+      background: transparent;
+      color: var(--text);
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 11, 88, 0.08);
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      gap: 12px;
+    }
+
+    .char-count {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    #replyChars {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    button.submit {
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    button.submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    button.submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .empty-replies {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span onclick="goBack()">← Back</span>
+    </div>
+    <button class="go-back" onclick="goBack()">GO BACK TO DASHBOARD</button>
+  </header>
+
+  <div class="container">
+    <!-- Original Post -->
+    <div id="postContainer" class="post-card"></div>
+
+    <!-- Reactions -->
+    <div id="reactionsContainer"></div>
+
+    <!-- Emoji Picker -->
+    <div class="emoji-picker" id="emojiPicker">
+      <span class="emoji-option" data-emoji="😂">😂</span>
+      <span class="emoji-option" data-emoji="💀">💀</span>
+      <span class="emoji-option" data-emoji="😭">😭</span>
+      <span class="emoji-option" data-emoji="🔥">🔥</span>
+      <span class="emoji-option" data-emoji="❤️">❤️</span>
+      <span class="emoji-option" data-emoji="👍">👍</span>
+      <span class="emoji-option" data-emoji="🤯">🤯</span>
+      <span class="emoji-option" data-emoji="⚡">⚡</span>
+    </div>
+
+    <!-- Replies Section -->
+    <div class="replies-section">
+      <div class="replies-title">💬 Replies</div>
+      <div id="repliesContainer"></div>
+    </div>
+
+    <!-- Reply Form -->
+    <div class="reply-form">
+      <label class="form-label">Share your thoughts:</label>
+      <textarea id="replyContent" maxlength="300" placeholder="What do you think?"></textarea>
+      <div class="form-row">
+        <div class="char-count"><span id="replyChars">0</span>/300</div>
+        <button class="submit" id="submitReply">Post Reply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">✨ Reply posted</div>
+
+  <script type="module">
+    import { db, serverTimestamp } from './firebase.js';
+    import {
+      collection,
+      query,
+      where,
+      getDocs,
+      doc,
+      getDoc,
+      addDoc,
+      updateDoc,
+      increment,
+      orderBy,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const username = localStorage.getItem('username');
+    if (!username) {
+      window.location.href = 'name.html';
+    }
+
+    window.goBack = function() {
+      window.location.href = 'index.html';
+    };
+
+    // Get post ID from URL
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('id');
+
+    console.log('Post ID from URL:', postId); // DEBUG
+
+    if (!postId) {
+      console.error('No post ID found in URL');
+      window.location.href = 'index.html';
+    }
+
+    const postContainer = document.getElementById('postContainer');
+    const repliesContainer = document.getElementById('repliesContainer');
+    const reactionsContainer = document.getElementById('reactionsContainer');
+    const replyContent = document.getElementById('replyContent');
+    const submitReply = document.getElementById('submitReply');
+    const replyChars = document.getElementById('replyChars');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const toast = document.getElementById('toast');
+
+    let currentPost = null;
+
+    // Helper functions
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(d) {
+      try {
+        return new Intl.DateTimeFormat(undefined, {
+          day: 'numeric',
+          month: 'short',
+          hour: 'numeric',
+          minute: '2-digit'
+        }).format(d);
+      } catch (e) {
+        return d.toLocaleString();
+      }
+    }
+
+    // Load post
+    async function loadPost() {
+      try {
+        const postDoc = await getDoc(doc(db, 'posts', postId));
+        if (postDoc.exists()) {
+          currentPost = { id: postDoc.id, ...postDoc.data() };
+          renderPost();
+          loadReplies();
+          loadReactions();
+        } else {
+          postContainer.innerHTML = '<div class="empty-replies">Post not found</div>';
+        }
+      } catch (err) {
+        console.error('Error loading post:', err);
+        postContainer.innerHTML = '<div class="empty-replies">Error loading post</div>';
+      }
+    }
+
+    // Render main post
+    function renderPost() {
+      const data = currentPost;
+      const name = data.name || 'Unknown';
+      const content = data.content || '';
+      const imageUrl = data.imageUrl || '';
+      const ts = data.timestamp;
+      const reactions = data.reactions || {};
+
+      let timeText = '';
+      try {
+        if (ts && ts.toDate) timeText = formatDate(ts.toDate());
+        else if (ts && ts.seconds) timeText = formatDate(new Date(ts.seconds * 1000));
+      } catch (e) {
+        timeText = '';
+      }
+
+      let reactionsHtml = '';
+      if (Object.keys(reactions).length > 0) {
+        reactionsHtml = '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">';
+        Object.entries(reactions).forEach(([emoji, users]) => {
+          const count = Object.keys(users).length;
+          reactionsHtml += `<span style="background:rgba(255,11,88,0.08);border:1px solid var(--accent);padding:6px 10px;border-radius:999px;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all 0.2s;" onclick="toggleReaction('${emoji}');"><span>${emoji}</span><span style="font-weight:600;">${count}</span></span>`;
+        });
+        reactionsHtml += '</div>';
+      }
+
+      postContainer.innerHTML = `
+        <div class="post-header">
+          <div class="post-author">
+            <span class="name-pill">${escapeHtml(name)}</span>
+            <span class="time">${escapeHtml(timeText)}</span>
+          </div>
+        </div>
+        <div class="post-content">${escapeHtml(content)}</div>
+        ${imageUrl ? `<img src="${imageUrl}" alt="Post image" class="post-image" style="max-width:100%;border-radius:12px;margin:16px 0;">` : ''}
+        ${reactionsHtml}
+        <div style="margin-top:${Object.keys(reactions).length > 0 ? '12px' : '16px'};padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;">
+          <button class="add-reaction-btn" onclick="toggleEmojiPicker()" style="background:transparent;border:none;padding:0;font-size:24px;cursor:pointer;">😊</button>
+          <span style="font-size:12px;color:var(--muted);">Add reaction</span>
+        </div>
+      `;
+
+      window.toggleEmojiPicker = function() {
+        emojiPicker.classList.toggle('show');
+      };
+    }
+
+    // Load and render reactions
+    async function loadReactions() {
+      try {
+        const postDoc = await getDoc(doc(db, 'posts', postId));
+        const reactions = postDoc.data()?.reactions || {};
+
+        let reactionsHtml = '';
+        if (Object.keys(reactions).length > 0) {
+          Object.entries(reactions).forEach(([emoji, users]) => {
+            const count = Object.keys(users).length;
+            const userReacted = users[username] || false;
+            reactionsHtml += `
+              <button class="reaction-btn ${userReacted ? 'active' : ''}" 
+                      onclick="toggleReaction('${emoji}')">
+                <span>${emoji}</span>
+                <span class="reaction-count">${count}</span>
+              </button>
+            `;
+          });
+        }
+
+        if (reactionsHtml) {
+          reactionsContainer.innerHTML = `<div class="reactions-bar">${reactionsHtml}</div>`;
+        }
+      } catch (err) {
+        console.error('Error loading reactions:', err);
+      }
+    }
+
+    window.toggleReaction = async function(emoji) {
+      try {
+        const postRef = doc(db, 'posts', postId);
+        const postDoc = await getDoc(postRef);
+        const reactions = postDoc.data()?.reactions || {};
+
+        if (!reactions[emoji]) reactions[emoji] = {};
+
+        if (reactions[emoji][username]) {
+          delete reactions[emoji][username];
+          if (Object.keys(reactions[emoji]).length === 0) {
+            delete reactions[emoji];
+          }
+        } else {
+          reactions[emoji][username] = true;
+        }
+
+        await updateDoc(postRef, { reactions });
+        loadReactions();
+      } catch (err) {
+        console.error('Error updating reaction:', err);
+      }
+    };
+
+    // Load emoji picker
+    document.querySelectorAll('.emoji-option').forEach(el => {
+      el.addEventListener('click', async (e) => {
+        const emoji = e.target.getAttribute('data-emoji');
+        await toggleReaction(emoji);
+        emojiPicker.classList.remove('show');
+      });
+    });
+
+    // Load replies
+    function loadReplies() {
+      try {
+        const q = query(
+          collection(db, 'replies'),
+          where('postId', '==', postId),
+          orderBy('timestamp', 'desc')
+        );
+
+        const unsubscribe = onSnapshot(q, (snap) => {
+          console.log('Replies snapshot received, count:', snap.size); // DEBUG
+          repliesContainer.innerHTML = '';
+
+          if (snap.empty) {
+            repliesContainer.innerHTML = '<div class="empty-replies">No replies yet. Be the first!</div>';
+            return;
+          }
+
+          snap.forEach((doc) => {
+            const data = doc.data();
+            const name = data.name || 'Unknown';
+            const content = data.content || '';
+            const ts = data.timestamp;
+
+            let timeText = '';
+            try {
+              if (ts && ts.toDate) timeText = formatDate(ts.toDate());
+              else if (ts && ts.seconds) timeText = formatDate(new Date(ts.seconds * 1000));
+            } catch (e) {
+              timeText = '';
+            }
+
+            const replyCard = document.createElement('div');
+            replyCard.className = 'reply-card';
+            replyCard.innerHTML = `
+              <div class="reply-header">
+                <span class="reply-author">${escapeHtml(name)}</span>
+                <span class="reply-time">${escapeHtml(timeText)}</span>
+              </div>
+              <div class="reply-content">${escapeHtml(content)}</div>
+            `;
+            repliesContainer.appendChild(replyCard);
+          });
+        }, (error) => {
+          console.error('Error loading replies:', error); // DEBUG
+          repliesContainer.innerHTML = '<div class="empty-replies">Error loading replies. Try refreshing.</div>';
+        });
+      } catch (err) {
+        console.error('Error setting up replies listener:', err);
+        repliesContainer.innerHTML = '<div class="empty-replies">Error loading replies.</div>';
+      }
+    }
+
+    // Handle reply submission
+    replyContent.addEventListener('input', () => {
+      replyChars.textContent = replyContent.value.length;
+    });
+
+    submitReply.addEventListener('click', async () => {
+      const text = replyContent.value.trim();
+      if (text.length === 0) {
+        alert('Please write a reply');
+        replyContent.focus();
+        return;
+      }
+
+      submitReply.disabled = true;
+      submitReply.textContent = 'Posting...';
+
+      try {
+        await addDoc(collection(db, 'replies'), {
+          postId: postId,
+          name: username,
+          content: text,
+          timestamp: serverTimestamp()
+        });
+
+        replyContent.value = '';
+        replyChars.textContent = '0';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1500);
+
+        submitReply.disabled = false;
+        submitReply.textContent = 'Post Reply';
+      } catch (err) {
+        console.error('Error posting reply:', err);
+        alert('Failed to post reply');
+        submitReply.disabled = false;
+        submitReply.textContent = 'Post Reply';
+      }
+    });
+
+    replyContent.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        submitReply.click();
+      }
+    });
+
+    // Load post on page load
+    loadPost();
+  </script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import {
   getFirestore,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCibuFclmHoonkZqVOT3vOXmHHUfsK8hbo",
@@ -16,5 +17,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-export { db, serverTimestamp };
+export { db, serverTimestamp, storage };
