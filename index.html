@@ -48,7 +48,10 @@
       border-bottom:1px solid var(--border);
       background:var(--card);
       transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 99;
     }
 
     .brand {
@@ -168,12 +171,13 @@
       cursor:pointer;
       font-size:14px;
       font-weight: 600;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.2, 0.6, 0.2, 1);
+      letter-spacing: -0.2px;
     }
 
     .post-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
     }
 
     .post-btn:active {
@@ -243,7 +247,7 @@
 
     .card:hover{
       transform:translateY(-4px);
-      box-shadow:0 12px 28px rgba(255, 11, 88, 0.12);
+      box-shadow:0 16px 32px rgba(255, 11, 88, 0.15);
       border-color: var(--accent);
     }
 
@@ -393,11 +397,14 @@
       border-radius:16px;
       padding:18px;
       height:fit-content;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
+      position: sticky;
+      top: 80px;
     }
 
     .sidebar:hover {
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      border-color: var(--accent);
     }
 
     .sidebar h3{ 
@@ -405,6 +412,7 @@
       font-weight: 700;
       margin:0 0 14px;
       color: var(--text);
+      letter-spacing: -0.3px;
     }
 
     .leader{
@@ -414,7 +422,7 @@
       padding:10px 8px;
       border-radius:8px;
       font-size:14px;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0.6, 0.2, 1);
     }
 
     .leader:nth-child(odd){ 
@@ -428,7 +436,8 @@
     }
 
     .leader:hover {
-      background: rgba(255, 11, 88, 0.05);
+      background: rgba(255, 11, 88, 0.08);
+      padding-left: 12px;
     }
 
     .count{ 

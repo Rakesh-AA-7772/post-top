@@ -206,8 +206,9 @@
       flex-wrap: wrap;
       max-width: 300px;
       z-index: 1000;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      animation: slideUp 0.3s ease-out;
+      box-shadow: 0 12px 32px rgba(255, 11, 88, 0.15);
+      animation: slideUp 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
+      backdrop-filter: blur(10px);
     }
 
     .emoji-picker.show {
@@ -217,11 +218,11 @@
     @keyframes slideUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(20px) scale(0.95);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
@@ -230,14 +231,21 @@
       cursor: pointer;
       padding: 8px;
       border-radius: 8px;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0.6, 0.2, 1);
       background: transparent;
       border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .emoji-option:hover {
-      background: rgba(255, 11, 88, 0.08);
-      transform: scale(1.2);
+      background: rgba(255, 11, 88, 0.1);
+      transform: scale(1.25) rotate(5deg);
+    }
+
+    .emoji-option:active {
+      transform: scale(0.9);
     }
 
     .add-reaction-btn {
@@ -274,12 +282,13 @@
       padding: 16px;
       margin-bottom: 12px;
       animation: slideIn 0.4s ease-out;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.2, 0.6, 0.2, 1);
     }
 
     .reply-card:hover {
       border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(255, 11, 88, 0.08);
+      box-shadow: 0 6px 16px rgba(255, 11, 88, 0.1);
+      transform: translateY(-2px);
     }
 
     .reply-header {
@@ -338,14 +347,14 @@
       resize: vertical;
       background: transparent;
       color: var(--text);
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0.6, 0.2, 1);
       box-sizing: border-box;
     }
 
     textarea:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(255, 11, 88, 0.08);
+      box-shadow: 0 0 0 3px rgba(255, 11, 88, 0.1);
     }
 
     textarea::placeholder {
@@ -379,17 +388,22 @@
       font-weight: 600;
       cursor: pointer;
       font-size: 14px;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.2, 0.6, 0.2, 1);
     }
 
     button.submit:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    button.submit:active {
+      transform: translateY(0);
     }
 
     button.submit:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
 
     .empty-replies {
