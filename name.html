@@ -46,12 +46,18 @@
     .card {
       max-width: 420px;
       width: 100%;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
       background: var(--card);
-      animation: slideUp 0.4s ease-out;
+      animation: slideUp 0.5s cubic-bezier(0.2, 0.6, 0.2, 1);
       transition: all 0.3s ease;
+      border: 2px solid rgba(255, 11, 88, 0.1);
+    }
+
+    .card:hover {
+      border-color: rgba(255, 11, 88, 0.2);
+      box-shadow: 0 24px 72px rgba(0, 0, 0, 0.15);
     }
 
     @keyframes slideUp {
@@ -83,20 +89,22 @@
       width: 100%;
       padding: 14px;
       border: 2px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       margin-top: 10px;
       font-size: 16px;
       font-family: 'Inter', inherit;
       background: transparent;
       color: var(--text);
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
       box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
     input[type="text"]:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(255, 11, 88, 0.08);
+      box-shadow: 0 0 0 4px rgba(255, 11, 88, 0.12), 0 8px 16px rgba(255, 11, 88, 0.08);
+      transform: translateY(-2px);
     }
 
     input[type="text"]::placeholder {
@@ -104,27 +112,47 @@
     }
 
     button {
-      margin-top: 18px;
+      margin-top: 20px;
       width: 100%;
       padding: 14px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 0;
-      background: var(--text);
-      color: var(--bg);
-      font-weight: 600;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
       cursor: pointer;
       font-size: 15px;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
       font-family: 'Inter', inherit;
+      letter-spacing: 0.5px;
+      box-shadow: 0 6px 16px rgba(255, 11, 88, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: left 0.5s;
+    }
+
+    button:hover::before {
+      left: 100%;
     }
 
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(255, 11, 88, 0.35);
     }
 
     button:active {
-      transform: translateY(0);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(255, 11, 88, 0.2);
     }
 
     small {

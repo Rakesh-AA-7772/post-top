@@ -145,9 +145,21 @@ function escapeHtml(s){
     .replace(/'/g, '&#39;');
 }
 
-// format timestamp
+// format timestamp with relative time
 function formatDate(d){
-  try{
+  try {
+    const now = new Date();
+    const diffMs = now - d;
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 60) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
     return new Intl.DateTimeFormat(undefined, {
       day:'numeric', month:'short',
       hour:'numeric', minute:'2-digit'
@@ -181,10 +193,10 @@ function renderPost(doc){
   
   let reactionsHtml = '';
   if (Object.keys(reactions).length > 0) {
-    reactionsHtml = '<div class="reactions-bar" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">';
+    reactionsHtml = '<div class="reactions-bar" style="margin-top:14px;padding-top:14px;border-top:2px solid rgba(255,11,88,0.1);display:flex;flex-wrap:wrap;gap:8px;animation:slideIn 0.3s ease-out;">';
     Object.entries(reactions).forEach(([emoji, users]) => {
       const count = Object.keys(users).length;
-      reactionsHtml += `<span style="background:rgba(255,11,88,0.08);border:1px solid var(--accent);padding:4px 8px;border-radius:999px;font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="event.stopPropagation(); toggleReactionFeed('${postId}', '${emoji}');"><span>${emoji}</span><span style="font-weight:600;">${count}</span></span>`;
+      reactionsHtml += `<span style="background:rgba(255,11,88,0.1);border:1.5px solid var(--accent);padding:6px 12px;border-radius:999px;font-size:13px;display:flex;align-items:center;gap:5px;cursor:pointer;transition:all 0.3s ease;font-weight:600;" onclick="event.stopPropagation(); toggleReactionFeed('${postId}', '${emoji}');" onmouseover="this.style.transform='scale(1.1)';this.style.background='rgba(255,11,88,0.2)';" onmouseout="this.style.transform='scale(1)';this.style.background='rgba(255,11,88,0.1)';"><span>${emoji}</span><span>${count}</span></span>`;
     });
     reactionsHtml += '</div>';
   }
@@ -203,13 +215,13 @@ function renderPost(doc){
         💬 <span id="reply-count-${postId}" style="font-weight:600;"></span>
       </button>
     </div>
-    <div class="emoji-picker-inline" id="picker-${postId}" style="display:none;margin-top:12px;padding:12px;background:rgba(255,11,88,0.05);border-radius:8px;border:1px solid var(--border);gap:8px;flex-wrap:wrap;justify-content:center;animation:slideIn 0.2s ease-out;">
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😂');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">😂</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '💀');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">💀</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😭');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">😭</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '🔥');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">🔥</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '❤️');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">❤️</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '👍');" style="font-size:24px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;background:transparent;" onmouseover="this.style.background='rgba(255,11,88,0.1);transform:scale(1.15)';" onmouseout="this.style.background='transparent';transform:scale(1)';">👍</span>
+    <div class="emoji-picker-inline" id="picker-${postId}" style="display:none;margin-top:12px;padding:14px;background:linear-gradient(135deg,rgba(255,11,88,0.08),rgba(255,11,88,0.04));border-radius:12px;border:2px solid rgba(255,11,88,0.2);gap:8px;flex-wrap:wrap;justify-content:center;animation:slideIn 0.25s cubic-bezier(0.2, 0.6, 0.2, 1);backdrop-filter:blur(10px);">
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😂');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">😂</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '💀');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">💀</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😭');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">😭</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '🔥');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">🔥</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '❤️');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">❤️</span>
+      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '👍');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">👍</span>
     </div>
   `;
   // set content as text to preserve newlines and avoid XSS
