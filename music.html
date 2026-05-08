@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Music - We Write</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff0b58">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #5a818d4f;
+      --card: #ffffff;
+      --border: #e6e8ee;
+      --accent: #ff0b58;
+      --muted: #6b7280;
+      --text: #111111;
+      --text-secondary: #666666;
+      font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1419;
+        --card: #1a1f26;
+        --border: #2a2f36;
+        --accent: #ff0b58;
+        --text: #e8eaed;
+        --text-secondary: #b0b5c0;
+        --muted: #6b7280;
+      }
+    }
+
+    body{
+      background: var(--bg);
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Header */
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 20px;
+      border-bottom:1px solid var(--border);
+      background:var(--card);
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .brand:hover {
+      transform: scale(1.02);
+    }
+
+    .menu{ display:flex; gap:18px; align-items:center; }
+
+    .menu a{
+      text-decoration:none;
+      font-size:14px;
+      font-weight: 500;
+      color:var(--text-secondary);
+      padding:8px 12px;
+      border-radius:8px;
+      transition: all 0.2s ease;
+    }
+
+    .menu a:hover {
+      color: var(--accent);
+      background: rgba(255, 11, 88, 0.05);
+    }
+
+    .menu a.active{
+      background:rgba(255, 11, 88, 0.1);
+      color:var(--accent);
+      font-weight:600;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 11, 88, 0.05);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .user-profile:hover {
+      background: rgba(255, 11, 88, 0.1);
+      color: var(--accent);
+    }
+
+    /* Layout */
+    .container{
+      max-width:1000px;
+      margin:24px auto;
+      padding:0 16px;
+    }
+
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header-section h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .upload-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      transition: all 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
+      letter-spacing: 0.5px;
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(255, 11, 88, 0.3);
+    }
+
+    .upload-btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* Upload Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      animation: slideUp 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal h2 {
+      margin: 0 0 20px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="file"],
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Inter', inherit;
+      background: transparent;
+      color: var(--text);
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 11, 88, 0.1);
+    }
+
+    .form-group input::placeholder {
+      color: var(--muted);
+    }
+
+    .file-info {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-upload {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-upload:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(255, 11, 88, 0.2);
+    }
+
+    .btn-cancel {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 11, 88, 0.1);
+      color: var(--accent);
+    }
+
+    /* Music Grid */
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .music-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.3s cubic-bezier(0.2, 0.6, 0.2, 1);
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .music-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(255, 11, 88, 0.15);
+      border-color: var(--accent);
+    }
+
+    .music-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 8px;
+      word-break: break-word;
+    }
+
+    .music-artist {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin: 0 0 12px;
+    }
+
+    .music-mood {
+      display: inline-block;
+      background: rgba(255, 11, 88, 0.1);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .music-player {
+      width: 100%;
+      margin: 16px 0;
+      border-radius: 8px;
+    }
+
+    .music-player::-webkit-media-controls-panel {
+      background: rgba(255, 11, 88, 0.05);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .empty-text {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    /* Loading state */
+    .skeleton-card {
+      background: linear-gradient(
+        90deg,
+        var(--card) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        var(--card) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -1000px 0;
+      }
+      100% {
+        background-position: 1000px 0;
+      }
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%) translateY(120px);
+      background: linear-gradient(135deg, var(--text), rgba(0,0,0,0.9));
+      color:var(--card);
+      padding:14px 20px;
+      border-radius:12px;
+      font-size:14px;
+      font-weight: 600;
+      opacity:0;
+      pointer-events:none;
+      transition: all 0.4s cubic-bezier(0.2, 0.6, 0.2, 1);
+      z-index:9998;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .toast.show{ 
+      opacity:1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Responsive */
+    @media(max-width: 600px){
+      .header-section {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .music-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand" onclick="window.location.href='index.html';">🎵 We Write Music</div>
+
+    <nav class="menu">
+      <a href="index.html">FEED</a>
+      <a href="music.html" class="active">MUSIC</a>
+      <a href="about.html">ABOUT</a>
+      <div class="user-profile" id="userProfile">
+        <span>👤</span>
+        <span id="userName">User</span>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="header-section">
+      <h1>🎶 Music Library</h1>
+      <button class="upload-btn" id="uploadBtn">+ Share Music</button>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="uploadModal">
+      <div class="modal-content">
+        <h2>Upload Your Music</h2>
+        
+        <div class="form-group">
+          <label for="musicTitle">Song Title *</label>
+          <input type="text" id="musicTitle" maxlength="100" placeholder="e.g. Midnight Dreams">
+          <div class="file-info">Max 100 characters</div>
+        </div>
+
+        <div class="form-group">
+          <label for="musicArtist">Artist / Your Name *</label>
+          <input type="text" id="musicArtist" maxlength="100" placeholder="e.g. Alex Chen">
+          <div class="file-info">Max 100 characters</div>
+        </div>
+
+        <div class="form-group">
+          <label for="musicMood">Mood (Optional)</label>
+          <select id="musicMood">
+            <option value="">Choose a mood...</option>
+            <option value="Happy">😊 Happy</option>
+            <option value="Sad">😢 Sad</option>
+            <option value="Energetic">⚡ Energetic</option>
+            <option value="Chill">😎 Chill</option>
+            <option value="Romantic">💕 Romantic</option>
+            <option value="Dark">🌙 Dark</option>
+            <option value="Uplifting">✨ Uplifting</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="musicFile">MP3 File *</label>
+          <input type="file" id="musicFile" accept=".mp3" />
+          <div class="file-info">Max 10 MB. Only MP3 format.</div>
+        </div>
+
+        <div id="uploadStatus" style="font-size: 13px; color: var(--muted); margin-top: 12px; display: none;"></div>
+
+        <div class="modal-actions">
+          <button class="btn-upload" id="submitBtn">Upload</button>
+          <button class="btn-cancel" id="cancelBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Music Grid -->
+    <div id="musicGrid" class="music-grid"></div>
+    <div id="empty" class="empty" style="display:none;">
+      <div class="empty-icon">🎵</div>
+      <div class="empty-text">No music yet. Be the first to share! 🎶</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { db } from './firebase.js';
+    import {
+      collection,
+      addDoc,
+      query,
+      orderBy,
+      onSnapshot,
+      serverTimestamp,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    // Cloudinary config
+    const CLOUDINARY_CLOUD_NAME = 'dbfrnakxh';
+    const CLOUDINARY_UPLOAD_PRESET = 'posttopmusic';
+    const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`;
+
+    const username = localStorage.getItem('username');
+    if (!username) {
+      window.location.href = 'name.html';
+    }
+
+    // Update username display
+    const userNameEl = document.getElementById('userName');
+    if (userNameEl) {
+      userNameEl.textContent = username;
+    }
+
+    // User profile click handler
+    const userProfile = document.getElementById('userProfile');
+    if (userProfile) {
+      userProfile.addEventListener('click', () => {
+        const action = confirm(`👤 ${username}\n\n[OK] Change name\n[Cancel] Close`);
+        if (action) {
+          localStorage.removeItem('username');
+          window.location.href = 'name.html';
+        }
+      });
+    }
+
+    // DOM Elements
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadModal = document.getElementById('uploadModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const musicGrid = document.getElementById('musicGrid');
+    const emptyEl = document.getElementById('empty');
+    const toast = document.getElementById('toast');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    const musicTitle = document.getElementById('musicTitle');
+    const musicArtist = document.getElementById('musicArtist');
+    const musicMood = document.getElementById('musicMood');
+    const musicFile = document.getElementById('musicFile');
+
+    let selectedFile = null;
+
+    // Show upload modal
+    uploadBtn.addEventListener('click', () => {
+      uploadModal.classList.add('show');
+      musicTitle.focus();
+    });
+
+    // Close modal
+    function closeModal() {
+      uploadModal.classList.remove('show');
+      musicTitle.value = '';
+      musicArtist.value = '';
+      musicMood.value = '';
+      musicFile.value = '';
+      selectedFile = null;
+      uploadStatus.style.display = 'none';
+      uploadStatus.innerHTML = '';
+    }
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    // File input handler
+    musicFile.addEventListener('change', (e) => {
+      selectedFile = e.target.files[0];
+      if (selectedFile) {
+        if (selectedFile.size > 10 * 1024 * 1024) {
+          alert('File too large! Max 10 MB.');
+          musicFile.value = '';
+          selectedFile = null;
+        } else if (selectedFile.type !== 'audio/mpeg') {
+          alert('Only MP3 files allowed.');
+          musicFile.value = '';
+          selectedFile = null;
+        }
+      }
+    });
+
+    // Upload to Cloudinary
+    async function uploadToCloudinary(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+      const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error.message || 'Cloudinary upload failed');
+      }
+
+      return data.secure_url;
+    }
+
+    // Submit handler
+    submitBtn.addEventListener('click', async () => {
+      const title = musicTitle.value.trim();
+      const artist = musicArtist.value.trim();
+      const mood = musicMood.value || null;
+
+      if (!title || !artist || !selectedFile) {
+        alert('Please fill in all required fields and select a file.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      uploadStatus.style.display = 'block';
+      uploadStatus.textContent = 'Uploading to Cloudinary...';
+
+      try {
+        // Upload to Cloudinary
+        uploadStatus.textContent = 'Uploading file...';
+        const cloudinaryUrl = await uploadToCloudinary(selectedFile);
+
+        uploadStatus.textContent = 'Saving to database...';
+        // Save metadata to Firestore
+        await addDoc(collection(db, 'music'), {
+          title,
+          artist,
+          mood,
+          url: cloudinaryUrl,
+          uploadedBy: username,
+          timestamp: serverTimestamp()
+        });
+
+        uploadStatus.innerHTML = '<span style="color: #00d084;">✅ Success!</span>';
+        setTimeout(() => {
+          closeModal();
+          showToast('🎵 Music uploaded successfully!');
+        }, 500);
+      } catch (err) {
+        console.error('Error uploading:', err);
+        uploadStatus.innerHTML = `<span style="color: #ff6b6b;">❌ Error: ${err.message}</span>`;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Load music
+    function loadMusic() {
+      const q = query(collection(db, 'music'), orderBy('timestamp', 'desc'));
+      
+      onSnapshot(q, (snap) => {
+        musicGrid.innerHTML = '';
+        
+        if (snap.empty) {
+          emptyEl.style.display = 'block';
+          return;
+        }
+
+        emptyEl.style.display = 'none';
+
+        snap.forEach((doc) => {
+          const data = doc.data();
+          const moodEmoji = {
+            'Happy': '😊',
+            'Sad': '😢',
+            'Energetic': '⚡',
+            'Chill': '😎',
+            'Romantic': '💕',
+            'Dark': '🌙',
+            'Uplifting': '✨'
+          };
+
+          const card = document.createElement('div');
+          card.className = 'music-card';
+          card.innerHTML = `
+            <h3 class="music-title">${escapeHtml(data.title)}</h3>
+            <p class="music-artist">by ${escapeHtml(data.artist)}</p>
+            ${data.mood ? `<div class="music-mood">${moodEmoji[data.mood] || '🎵'} ${escapeHtml(data.mood)}</div>` : ''}
+            <audio class="music-player" controls>
+              <source src="${data.url}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+            ${data.uploadedBy === username ? `
+              <button onclick="deleteMusic('${doc.id}')" style="width:100%;padding:8px;margin-top:12px;background:#ff6b6b;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">Delete</button>
+            ` : ''}
+          `;
+          musicGrid.appendChild(card);
+        });
+      }, (err) => {
+        console.error('Error loading music:', err);
+      });
+    }
+
+    // Delete music
+    window.deleteMusic = async function(musicId) {
+      if (!confirm('Delete this music?')) return;
+      try {
+        await deleteDoc(doc(db, 'music', musicId));
+        showToast('Music deleted');
+      } catch (err) {
+        console.error('Error deleting:', err);
+        alert('Error deleting music');
+      }
+    };
+
+    // Show toast
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Escape HTML
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Load music on page load
+    loadMusic();
+  </script>
+
+  <script>
+    // Register Service Worker for offline support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

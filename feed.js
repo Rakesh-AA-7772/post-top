@@ -1,5 +1,6 @@
 // feed.js
 import { db } from './firebase.js';
+import { generateShareImage, shareImage } from './share-utils.js';
 import {
   collection,
   query,
@@ -211,6 +212,9 @@ function renderPost(doc){
     ${reactionsHtml}
     <div class="card-actions" style="margin-top:${Object.keys(reactions).length > 0 ? '8px' : '12px'};display:flex;gap:8px;align-items:center;">
       <button class="card-action-emoji" style="background:transparent;border:none;padding:6px 8px;font-size:18px;cursor:pointer;border-radius:6px;transition:all 0.2s;" onclick="event.stopPropagation(); toggleEmojiPickerFeed('${postId}');"><img src="reaction.svg" alt="Add reaction" style="width:20px;height:20px;"></button>
+      <button class="card-action-btn" onclick="event.stopPropagation(); sharePostFeed('${postId}', event);" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
+        📤 Share
+      </button>
       <button class="card-action-btn reply-btn" data-post-id="${escapeHtml(postId)}" onclick="event.stopPropagation();" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
         💬 <span id="reply-count-${postId}" style="font-weight:600;"></span>
       </button>
@@ -299,6 +303,56 @@ window.addReactionFeed = async function(postId, emoji) {
     if (picker) picker.style.display = 'none';
   } catch (err) {
     console.error('Error adding reaction:', err);
+  }
+};
+
+// Share post as image
+window.sharePostFeed = async function(postId, event) {
+  try {
+    const postRef = doc(db, 'posts', postId);
+    const postDoc = await getDoc(postRef);
+    const postData = postDoc.data();
+
+    if (!postData) {
+      alert('Error loading post');
+      return;
+    }
+
+    // Get the button element properly
+    const btn = event && event.target ? event.target.closest('button') : document.querySelector(`button[onclick*="sharePostFeed('${postId}')"]`);
+    const originalText = btn ? btn.textContent : '📤 Share';
+    if (btn) {
+      btn.textContent = '⏳ Generating...';
+      btn.disabled = true;
+    }
+
+    // Generate image
+    const canvas = await generateShareImage({
+      name: postData.name,
+      content: postData.content,
+      timestamp: postData.timestamp
+    });
+
+    if (btn) {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+
+    // Share or download
+    await shareImage(canvas, postData.name);
+    
+    // Show toast
+    toastEl.textContent = '📤 Post shared successfully!';
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 3000);
+  } catch (err) {
+    console.error('Error sharing post:', err);
+    alert('Failed to share post: ' + err.message);
+    const btn = event && event.target ? event.target.closest('button') : null;
+    if (btn) {
+      btn.textContent = '📤 Share';
+      btn.disabled = false;
+    }
   }
 };
 
