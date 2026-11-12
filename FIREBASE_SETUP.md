@@ -29,7 +29,7 @@ Existing posts, replies, and music documents created before this update do not h
 - Client-side post updates (including reactions) are currently disabled because the existing client rewrites the entire nested reaction map. This is intentionally restrictive: reactions will remain unavailable until they are migrated to per-user documents with rules that enforce UID ownership.
 - Music uses a public unsigned Cloudinary upload preset. Configure that preset in Cloudinary with strict resource type, MP3 format, file-size, folder, and quota restrictions; a public preset cannot securely prove uploader identity by itself.
 
-## 5. Quick verification
+## 5. Admin, notifications and indexes\nSee ADMIN_SETUP.md for enabling Email/Password sign-in for the admin account and assigning the admin custom claim using a trusted Firebase Admin SDK environment. Never grant admin access in frontend code. Deploy firestore.indexes.json or create the composite indexes when Firebase prompts you.\n\n## 6. Quick verification
 1. Open the app in a fresh browser session.
 2. Choose a display name and create a post.
 3. In Firestore, confirm the new post has an ownerUid field.
