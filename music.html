@@ -723,7 +723,7 @@
             <p class="music-artist">by ${escapeHtml(data.artist)}</p>
             ${data.mood ? `<div class="music-mood">${moodEmoji[data.mood] || '🎵'} ${escapeHtml(data.mood)}</div>` : ''}
             <audio class="music-player" controls preload="none" playsinline>
-              <source src="${data.url}" type="audio/mpeg">
+              <source src="${escapeHtml(data.url)}" type="audio/mpeg">
               Your browser does not support the audio element.
             </audio>
             ${data.ownerUid === authUser.uid ? `
