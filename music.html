@@ -684,7 +684,7 @@
         }, 500);
       } catch (err) {
         console.error('Error uploading:', err);
-        uploadStatus.innerHTML = `<span style="color: #ff6b6b;">❌ Error: ${err.message}</span>`;
+        uploadStatus.textContent = '❌ Error: ' + err.message;
       } finally {
         submitBtn.disabled = false;
       }
