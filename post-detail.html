@@ -512,7 +512,7 @@
   <div id="toast" class="toast">✨ Reply posted</div>
 
   <script type="module">
-    import { db, serverTimestamp } from './firebase.js';
+    import { db, serverTimestamp, ensureAuth } from './firebase.js';
     import {
       collection,
       query,
@@ -527,6 +527,7 @@
       onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+    const authUser = await ensureAuth();
     const username = localStorage.getItem('username');
     if (!username) {
       window.location.href = 'name.html';
@@ -657,7 +658,7 @@
         if (Object.keys(reactions).length > 0) {
           Object.entries(reactions).forEach(([emoji, users]) => {
             const count = Object.keys(users).length;
-            const userReacted = users[username] || false;
+            const userReacted = users[authUser.uid] || false;
             reactionsHtml += `
               <button class="reaction-btn ${userReacted ? 'active' : ''}" 
                       onclick="toggleReaction('${emoji}')">
@@ -684,7 +685,7 @@
 
         if (!reactions[emoji]) reactions[emoji] = {};
 
-        if (reactions[emoji][username]) {
+        if (reactions[emoji][authUser.uid]) {
           delete reactions[emoji][username];
           if (Object.keys(reactions[emoji]).length === 0) {
             delete reactions[emoji];
@@ -781,6 +782,7 @@
       try {
         await addDoc(collection(db, 'replies'), {
           postId: postId,
+          ownerUid: authUser.uid,
           name: username,
           content: text,
           timestamp: serverTimestamp()
