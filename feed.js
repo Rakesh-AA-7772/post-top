@@ -309,7 +309,7 @@ window.toggleEmojiPickerFeed = function(postId) {
 };
 
 // Add reaction from feed
-window.addReactionFeed = async function(postId, emoji) {
+window.toggleReactionFeed = function(postId, emoji) { return window.addReactionFeed(postId, emoji); };\n\nwindow.addReactionFeed = async function(postId, emoji) {
   try {
     const reactionRef = doc(db, 'posts', postId, 'reactions', authUser.uid);
     const existing = await getDoc(reactionRef);
