@@ -649,55 +649,47 @@
     }
 
     // Load and render reactions
-    async function loadReactions() {
-      try {
-        const postDoc = await getDoc(doc(db, 'posts', postId));
-        const reactions = postDoc.data()?.reactions || {};
-
-        let reactionsHtml = '';
-        if (Object.keys(reactions).length > 0) {
-          Object.entries(reactions).forEach(([emoji, users]) => {
-            const count = Object.keys(users).length;
-            const userReacted = users[authUser.uid] || false;
-            reactionsHtml += `
-              <button class="reaction-btn ${userReacted ? 'active' : ''}" 
-                      onclick="toggleReaction('${emoji}')">
-                <span>${emoji}</span>
-                <span class="reaction-count">${count}</span>
-              </button>
-            `;
-          });
-        }
-
-        if (reactionsHtml) {
-          reactionsContainer.innerHTML = `<div class="reactions-bar">${reactionsHtml}</div>`;
-        }
-      } catch (err) {
-        console.error('Error loading reactions:', err);
-      }
+    function loadReactions() {
+      const reactionsQuery = collection(db, 'posts', postId, 'reactions');
+      return onSnapshot(reactionsQuery, (snap) => {
+        const counts = Object.create(null);
+        let myEmoji = null;
+        snap.forEach((reactionDoc) => {
+          const data = reactionDoc.data();
+          if (data.emoji) counts[data.emoji] = (counts[data.emoji] || 0) + 1;
+          if (reactionDoc.id === authUser.uid) myEmoji = data.emoji;
+        });
+        reactionsContainer.innerHTML = '';
+        Object.entries(counts).forEach(([emoji, count]) => {
+          const btn = document.createElement('button');
+          btn.className = 'reaction-btn' + (myEmoji === emoji ? ' active' : '');
+          btn.type = 'button';
+          btn.textContent = emoji + ' ' + count;
+          btn.addEventListener('click', () => toggleReaction(emoji));
+          reactionsContainer.appendChild(btn);
+        });
+      }, (error) => console.error('Reaction listener failed:', error));
     }
 
     window.toggleReaction = async function(emoji) {
       try {
-        const postRef = doc(db, 'posts', postId);
-        const postDoc = await getDoc(postRef);
-        const reactions = postDoc.data()?.reactions || {};
-
-        if (!reactions[emoji]) reactions[emoji] = {};
-
-        if (reactions[emoji][authUser.uid]) {
-          delete reactions[emoji][authUser.uid];
-          if (Object.keys(reactions[emoji]).length === 0) {
-            delete reactions[emoji];
-          }
+        const reactionRef = doc(db, 'posts', postId, 'reactions', authUser.uid);
+        const existing = await getDoc(reactionRef);
+        if (existing.exists() && existing.data().emoji === emoji) {
+          await deleteDoc(reactionRef);
         } else {
-          reactions[emoji][authUser.uid] = true;
+          await setDoc(reactionRef, { ownerUid: authUser.uid, emoji, timestamp: serverTimestamp() });
+          const ownerUid = currentPost?.ownerUid;
+          if (ownerUid && ownerUid !== authUser.uid) {
+            await addDoc(collection(db, 'notifications'), {
+              recipientUid: ownerUid, actorUid: authUser.uid, actorName: username,
+              postId, type: 'reaction', read: false, createdAt: serverTimestamp()
+            });
+          }
         }
-
-        await updateDoc(postRef, { reactions });
-        loadReactions();
       } catch (err) {
         console.error('Error updating reaction:', err);
+        alert('Could not save reaction. Check your Firebase rules.');
       }
     };
 
@@ -787,6 +779,14 @@
           content: text,
           timestamp: serverTimestamp()
         });
+
+        if (currentPost?.ownerUid && currentPost.ownerUid !== authUser.uid) {
+          await addDoc(collection(db, 'notifications'), {
+            recipientUid: currentPost.ownerUid, actorUid: authUser.uid,
+            actorName: username, postId, type: 'reply', read: false,
+            createdAt: serverTimestamp()
+          });
+        }
 
         replyContent.value = '';
         replyChars.textContent = '0';
