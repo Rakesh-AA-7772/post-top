@@ -273,9 +273,10 @@
   <div id="toast" class="toast">✨ Thought shared</div>
 
   <script type="module">
-    import { db, serverTimestamp } from './firebase.js';
+    import { db, serverTimestamp, ensureAuth } from './firebase.js';
     import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+    const authUser = await ensureAuth();
     const username = localStorage.getItem('username');
     if (!username) {
       window.location.href = 'name.html';
@@ -301,8 +302,8 @@
       const file = e.target.files[0];
       if (file) {
         // Check file size (max 2MB for practical Firestore limits)
-        if (file.size > 2 * 1024 * 1024) {
-          alert('Image too large. Max 2MB. Please choose a smaller image.');
+        if (!file.type.startsWith('image/') || file.size > 600 * 1024) {
+          alert('Please choose a valid image smaller than 600KB.');
           imageInput.value = '';
           return;
         }
@@ -361,6 +362,7 @@
         // Save post with base64 image embedded in Firestore
         await addDoc(collection(db, 'posts'), {
           name: username,
+          ownerUid: authUser.uid,
           content: text,
           imageUrl: selectedImageBase64 || '', // Store base64 directly in Firestore
           reactions: {},
