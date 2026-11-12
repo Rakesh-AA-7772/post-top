@@ -1,124 +1,38 @@
-# Firebase Security Rules Setup
+# Firebase setup and security
 
-## Overview
-To enable the reply system to work properly, you need to update your Firebase Firestore security rules.
+This app uses Firebase Anonymous Authentication. Visitors do not need a password, but Firebase assigns each browser installation a UID. The UID—not the editable display name in localStorage—is used for write ownership.
 
-## Current Issue
-If you're seeing this error when trying to reply:
-```
-FirebaseError: Missing or insufficient permissions
-```
+## 1. Enable Anonymous Authentication
+1. Open https://console.firebase.google.com/ and select project posttop-7155a.
+2. Open Authentication → Sign-in method.
+3. Enable Anonymous and save.
+If this provider is not enabled, posting and replying will fail.
 
-This means your Firebase security rules don't allow writing to the `replies` collection.
+## 2. Publish the Firestore rules
+The repository contains the rules in firestore.rules.
+1. Open Firestore Database → Rules in the Firebase Console.
+2. Replace the existing rules with the complete contents of firestore.rules.
+3. Review and click Publish.
 
-## Solution: Update Firestore Security Rules
+The rules allow public reads, require an authenticated Firebase user to create content, bind new documents to that user's UID, validate basic field types and lengths, and prevent users from editing or deleting another user's content. Post reaction updates are restricted to the reactions field.
 
-### Step 1: Go to Firebase Console
-1. Visit: https://console.firebase.google.com/
-2. Select your project: `posttop-7155a`
-3. Navigate to **Firestore Database** → **Rules**
+Never use unrestricted rules such as allow read, write: if true. They allow anyone on the internet to modify or delete database content.
 
-### Step 2: Replace with These Rules
+## 3. Existing content
+Existing posts, replies, and music documents created before this update do not have ownerUid. They remain publicly readable, but ownership-protected updates/deletes will not work for those legacy documents. New content will include ownerUid.
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow anyone to read and write posts
-    match /posts/{document=**} {
-      allow read, write;
-    }
-    
-    // Allow anyone to read and write replies
-    match /replies/{document=**} {
-      allow read, write;
-    }
-  }
-}
-```
+## 4. Important limitations
+- Anonymous accounts are lightweight identities, not strong proof of a real person's identity. They can be replaced by clearing browser data or using another browser/device.
+- Firestore rules do not provide robust rate limiting or spam prevention. Add App Check and server-side moderation/rate controls before treating the app as production-hardened.
+- The browser-side 600KB image check is a usability limit; it is not a substitute for a trusted image-processing/upload backend.
+- Firebase web configuration values are public identifiers, not secrets. Security must come from Authentication, Firestore rules, and appropriate App Check enforcement.
 
-### Step 3: Publish the Rules
-- Click **"Publish"** button
-- Wait for the rules to deploy (usually takes 1-2 minutes)
+## 5. Quick verification
+1. Open the app in a fresh browser session.
+2. Choose a display name and create a post.
+3. In Firestore, confirm the new post has an ownerUid field.
+4. Create a reply and confirm it also has ownerUid.
+5. Test reactions and music upload/delete.
+6. Confirm the app cannot modify another user's ownerUid or delete another user's content.
 
-## Important Security Note ⚠️
-
-The above rules allow **unrestricted read/write access**. This is fine for development and a public feed app. 
-
-For production apps handling sensitive data, you should:
-- Require user authentication
-- Limit write access based on user identity
-- Add rate limiting
-- Add data validation
-
-### Example: Auth-Required Rules
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /posts/{document=**} {
-      allow read: if request.auth != null;
-      allow create, write: if request.auth != null;
-    }
-    
-    match /replies/{document=**} {
-      allow read: if request.auth != null;
-      allow create, write: if request.auth != null;
-    }
-  }
-}
-```
-
-## Troubleshooting
-
-### Still getting permission errors?
-1. Clear your browser cache
-2. Hard reload the page (Ctrl+Shift+R or Cmd+Shift+R)
-3. Check the browser console for the exact error
-
-### Replies are showing as 0?
-- The replies might not be created yet
-- Try posting a reply again
-- Check Firebase Firestore console to verify the `replies` collection exists
-
-### Database Structure
-The app automatically creates:
-- **posts** collection: Stores all post documents
-  - Fields: `name`, `content`, `timestamp`
-  
-- **replies** collection: Stores all reply documents
-  - Fields: `postId`, `name`, `content`, `timestamp`
-
-## Testing Reply System
-
-1. Go to home page (index.html)
-2. Click "Post" to create a test post
-3. Look for the "Reply" button under the post
-4. Click reply and type your response
-5. You should see the reply count update next to the Reply button
-
-## Still Having Issues?
-
-If replies still aren't working after updating the rules:
-
-1. **Check Firebase Console**:
-   - Go to Firestore → Collections
-   - Verify `replies` collection exists
-   - Check if any documents were created
-
-2. **Check Browser Console** (F12):
-   - Look for error messages
-   - Copy the full error and check Firebase docs
-
-3. **Verify Firebase Config**:
-   - Check firebase.js has correct credentials
-   - Make sure you're using correct project ID
-
-4. **Try a Different Browser**:
-   - Clear cache
-   - Test in incognito mode
-
----
-
-**Last Updated**: May 6, 2026
-**Project**: WE WRITE (Minimal Feed)
+If posting fails, check that Anonymous Authentication is enabled and the published rules match firestore.rules.
