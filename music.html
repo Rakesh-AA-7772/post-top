@@ -437,6 +437,15 @@
         grid-template-columns: 1fr;
       }
     }
+  
+    /* WE WRITE polish */
+    :root{color-scheme:dark}
+    body{background:radial-gradient(ellipse at 15% 0%,rgba(255,11,88,.08),transparent 38%),var(--bg)}
+    .music-card{background:linear-gradient(145deg,rgba(255,255,255,.035),transparent 65%),var(--card);border:1px solid var(--border);box-shadow:0 12px 30px rgba(0,0,0,.12)}
+    .music-card:hover{border-color:var(--accent);box-shadow:0 18px 42px rgba(255,11,88,.13)}
+    .music-player{accent-color:var(--accent)}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+    @media(max-width:720px){header{padding:12px 14px;gap:10px;flex-wrap:wrap}.menu{gap:5px;flex-wrap:wrap;justify-content:flex-end}.menu a{font-size:12px;padding:7px 8px}.container{margin:18px auto}.modal-content{padding:24px 18px}}
   </style>
 </head>
 <body>
@@ -446,7 +455,7 @@
     <nav class="menu">
       <a href="index.html">FEED</a>
       <a href="music.html" class="active">MUSIC</a>
-      <a href="about.html">ABOUT</a>
+      <a href="about.html">ABOUT</a>\n      <a href="notifications.html" aria-label="Notifications">🔔</a>
       <div class="user-profile" id="userProfile">
         <span>👤</span>
         <span id="userName">User</span>
@@ -712,7 +721,7 @@
             <h3 class="music-title">${escapeHtml(data.title)}</h3>
             <p class="music-artist">by ${escapeHtml(data.artist)}</p>
             ${data.mood ? `<div class="music-mood">${moodEmoji[data.mood] || '🎵'} ${escapeHtml(data.mood)}</div>` : ''}
-            <audio class="music-player" controls>
+            <audio class="music-player" controls preload="none" playsinline>
               <source src="${data.url}" type="audio/mpeg">
               Your browser does not support the audio element.
             </audio>
