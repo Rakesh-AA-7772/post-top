@@ -5,6 +5,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCibuFclmHoonkZqVOT3vOXmHHUfsK8hbo",
@@ -18,5 +19,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app);
 
-export { db, serverTimestamp, storage };
+// Firebase UID is the identity used by Firestore rules; display names are cosmetic.
+async function ensureAuth() {
+  if (auth.currentUser) return auth.currentUser;
+  const credential = await signInAnonymously(auth);
+  return credential.user;
+}
+
+export { db, serverTimestamp, storage, auth, ensureAuth };
