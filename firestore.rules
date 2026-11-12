@@ -15,6 +15,7 @@ service cloud.firestore {
         && request.resource.data.content.size() <= 300
         && request.resource.data.imageUrl is string
         && request.resource.data.imageUrl.size() <= 900000
+        && (request.resource.data.imageUrl == '' || request.resource.data.imageUrl.matches('data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+'))
         && request.resource.data.reactions is map
         && request.resource.data.timestamp == request.time;
       allow update: if signedIn()
