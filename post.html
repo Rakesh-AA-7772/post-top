@@ -302,8 +302,8 @@
       const file = e.target.files[0];
       if (file) {
         // Check file size (max 2MB for practical Firestore limits)
-        if (!file.type.startsWith('image/') || file.size > 600 * 1024) {
-          alert('Please choose a valid image smaller than 600KB.');
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 600 * 1024) {
+          alert('Choose a JPEG, PNG, or WebP image smaller than 600KB.');
           imageInput.value = '';
           return;
         }
