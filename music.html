@@ -518,7 +518,7 @@
   <div id="toast" class="toast"></div>
 
   <script type="module">
-    import { db } from './firebase.js';
+    import { db, ensureAuth } from './firebase.js';
     import {
       collection,
       addDoc,
@@ -535,6 +535,7 @@
     const CLOUDINARY_UPLOAD_PRESET = 'posttopmusic';
     const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`;
 
+    const authUser = await ensureAuth();
     const username = localStorage.getItem('username');
     if (!username) {
       window.location.href = 'name.html';
@@ -662,6 +663,7 @@
           mood,
           url: cloudinaryUrl,
           uploadedBy: username,
+          ownerUid: authUser.uid,
           timestamp: serverTimestamp()
         });
 
@@ -714,7 +716,7 @@
               <source src="${data.url}" type="audio/mpeg">
               Your browser does not support the audio element.
             </audio>
-            ${data.uploadedBy === username ? `
+            ${data.ownerUid === authUser.uid ? `
               <button onclick="deleteMusic('${doc.id}')" style="width:100%;padding:8px;margin-top:12px;background:#ff6b6b;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">Delete</button>
             ` : ''}
           `;
