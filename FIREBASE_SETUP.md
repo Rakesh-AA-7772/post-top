@@ -26,6 +26,8 @@ Existing posts, replies, and music documents created before this update do not h
 - Firestore rules do not provide robust rate limiting or spam prevention. Add App Check and server-side moderation/rate controls before treating the app as production-hardened.
 - The browser-side 600KB image check is a usability limit; it is not a substitute for a trusted image-processing/upload backend.
 - Firebase web configuration values are public identifiers, not secrets. Security must come from Authentication, Firestore rules, and appropriate App Check enforcement.
+- Reaction updates are limited to the reactions field, but this version does not yet enforce per-user ownership inside that nested map. A signed-in user could manipulate another user's reaction entry; move reactions to per-user documents before treating reactions as tamper-proof.
+- Music uses a public unsigned Cloudinary upload preset. Configure that preset in Cloudinary with strict resource type, MP3 format, file-size, folder, and quota restrictions; a public preset cannot securely prove uploader identity by itself.
 
 ## 5. Quick verification
 1. Open the app in a fresh browser session.
