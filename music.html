@@ -766,6 +766,15 @@
         .replace(/'/g, '&#39;');
     }
 
+    // Enforce a single active audio player across all music cards.
+    document.addEventListener('play', (event) => {
+      const activePlayer = event.target;
+      if (!(activePlayer instanceof HTMLAudioElement)) return;
+      document.querySelectorAll('audio.music-player').forEach((player) => {
+        if (player !== activePlayer && !player.paused) player.pause();
+      });
+    }, true);
+
     // Load music on page load
     loadMusic();
   </script>
