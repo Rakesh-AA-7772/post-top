@@ -347,368 +347,46 @@ window.toggleEmojiPickerFeed = function(postId) {
   }
 };
 
-// Add reaction from feed
-window.toggleReactionFeed = function(postId, emoji) { return window.addReactionFeed(postId, emoji); };\n\nwindow.addReactionFeed = async function(postId, emoji) {
+// Add or remove the signed-in user's own reaction document.
+window.toggleReactionFeed = function(postId, emoji) {
+  return window.addReactionFeed(postId, emoji);
+};
+
+window.addReactionFeed = async function(postId, emoji) {
   try {
     const reactionRef = doc(db, 'posts', postId, 'reactions', authUser.uid);
     const existing = await getDoc(reactionRef);
     const postSnap = await getDoc(doc(db, 'posts', postId));
     if (!postSnap.exists()) return;
+
     if (existing.exists() && existing.data().emoji === emoji) {
       await deleteDoc(reactionRef);
     } else {
-      await setDoc(reactionRef, { ownerUid: authUser.uid, emoji, timestamp: serverTimestamp() });
+      await setDoc(reactionRef, {
+        ownerUid: authUser.uid,
+        emoji,
+        timestamp: serverTimestamp()
+      });
       const ownerUid = postSnap.data().ownerUid;
       if (ownerUid && ownerUid !== authUser.uid) {
         await addDoc(collection(db, 'notifications'), {
-          recipientUid: ownerUid, actorUid: authUser.uid, actorName: username,
-          postId, type: 'reaction', read: false, createdAt: serverTimestamp()
+          recipientUid: ownerUid,
+          actorUid: authUser.uid,
+          actorName: username,
+          postId,
+          type: 'reaction',
+          read: false,
+          createdAt: serverTimestamp()
         });
       }
     }
-    const picker = document.getElementById(`picker-${postId}`);
+    const picker = document.getElementById('picker-' + postId);
     if (picker) picker.style.display = 'none';
   } catch (err) {
     console.error('Error adding reaction:', err);
     toastEl.textContent = 'Could not save reaction. Check your Firebase rules.';
     toastEl.classList.add('show');
     setTimeout(() => toastEl.classList.remove('show'), 2500);
-  }
-}; feed.js
-import { db, ensureAuth } from './firebase.js';
-import { generateShareImage, shareImage } from './share-utils.js';
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  limit,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-  deleteDoc,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-const authUser = await ensureAuth();
-const username = localStorage.getItem('username');
-if (!username) {
-  window.location.href = 'name.html';
-}
-
-// Display username in header
-const userNameEl = document.getElementById('userName');
-if (userNameEl) {
-  userNameEl.textContent = username;
-}
-
-// User profile click handler
-const userProfile = document.getElementById('userProfile');
-if (userProfile) {
-  userProfile.addEventListener('click', () => {
-    const action = confirm(`👤 ${username}\n\n[OK] Change name\n[Cancel] Close`);
-    if (action) {
-      localStorage.removeItem('username');
-      window.location.href = 'name.html';
-    }
-  });
-}
-
-// Easter egg: Track logo clicks
-let logoClicks = 0;
-const logo = document.getElementById('logo');
-if (logo) {
-  logo.addEventListener('click', () => {
-    logoClicks++;
-    const message = `🎉 EASTER EGG: YOU CLICKED ME ${logoClicks} TIME${logoClicks !== 1 ? 'S' : ''}`;
-    
-    // Create dialog
-    const dialog = document.createElement('div');
-    dialog.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--card);
-      border: 2px solid var(--accent);
-      border-radius: 16px;
-      padding: 32px 28px;
-      text-align: center;
-      z-index: 10000;
-      animation: slideDown 0.3s ease-out;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
-      width: 90%;
-    `;
-    
-    dialog.innerHTML = `
-      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-      <div style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 8px;">EASTER EGG!</div>
-      <div style="font-size: 16px; color: var(--text); margin-bottom: 20px;">You clicked me <strong>${logoClicks}</strong> time${logoClicks !== 1 ? 's' : ''}!</div>
-      <div style="font-size: 13px; color: var(--muted);">Keep clicking... something might happen 😉</div>
-    `;
-    
-    // Add backdrop
-    const backdrop = document.createElement('div');
-    backdrop.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 9999;
-      animation: fadeIn 0.3s ease-out;
-    `;
-    
-    document.body.appendChild(backdrop);
-    document.body.appendChild(dialog);
-    
-    // Auto-hide after 1 seconds
-    setTimeout(() => {
-      dialog.style.animation = 'fadeOut 0.3s ease-out forwards';
-      backdrop.style.animation = 'fadeOut 0.3s ease-out forwards';
-      setTimeout(() => {
-        dialog.remove();
-        backdrop.remove();
-      }, 300);
-    }, 1000);
-  });
-}
-
-// Add animations for dialog
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translate(-50%, -60%);
-    }
-    to {
-      opacity: 1;
-      transform: translate(-50%, -50%);
-    }
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  @keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-`;
-document.head.appendChild(style);
-
-// Post button behavior
-const postBtn = document.getElementById('postBtn');
-if (postBtn) postBtn.addEventListener('click', () => { window.location.href = 'post.html'; });
-
-// Elements
-const feedEl = document.getElementById('feed');
-const emptyEl = document.getElementById('empty');
-const leaderboardEl = document.getElementById('leaderboard');
-const toastEl = document.getElementById('toast');
-const skeletonLoader = document.getElementById('skeleton-loader');
-
-// helper to escape basic HTML (name/time)
-function escapeHtml(s){
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// format timestamp with relative time
-function formatDate(d){
-  try {
-    const now = new Date();
-    const diffMs = now - d;
-    const diffSecs = Math.floor(diffMs / 1000);
-    const diffMins = Math.floor(diffSecs / 60);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffSecs < 60) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    
-    return new Intl.DateTimeFormat(undefined, {
-      day:'numeric', month:'short',
-      hour:'numeric', minute:'2-digit'
-    }).format(d);
-  } catch(e){
-    return d.toLocaleString();
-  }
-}
-
-// render one post card
-function renderPost(doc){
-  const data = doc.data();
-  const name = data.name || 'Unknown';
-  const content = data.content || '';
-  const imageUrl = data.imageUrl || '';
-  const reactions = data.reactions || {};
-  const ts = data.timestamp;
-  const postId = doc.id;
-
-  let timeText = '';
-  try {
-    if (ts && ts.toDate) timeText = formatDate(ts.toDate());
-    else if (ts && ts.seconds) timeText = formatDate(new Date(ts.seconds * 1000));
-  } catch (e) {
-    timeText = '';
-  }
-
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.style.cursor = 'pointer';
-  
-  let reactionsHtml = '';
-  if (Object.keys(reactions).length > 0) {
-    reactionsHtml = '<div class="reactions-bar" style="margin-top:14px;padding-top:14px;border-top:2px solid rgba(255,11,88,0.1);display:flex;flex-wrap:wrap;gap:8px;animation:slideIn 0.3s ease-out;">';
-    Object.entries(reactions).forEach(([emoji, users]) => {
-      const count = Object.keys(users).length;
-      reactionsHtml += `<span style="background:rgba(255,11,88,0.1);border:1.5px solid var(--accent);padding:6px 12px;border-radius:999px;font-size:13px;display:flex;align-items:center;gap:5px;cursor:pointer;transition:all 0.3s ease;font-weight:600;" onclick="event.stopPropagation(); toggleReactionFeed('${postId}', '${emoji}');" onmouseover="this.style.transform='scale(1.1)';this.style.background='rgba(255,11,88,0.2)';" onmouseout="this.style.transform='scale(1)';this.style.background='rgba(255,11,88,0.1)';"><span>${emoji}</span><span>${count}</span></span>`;
-    });
-    reactionsHtml += '</div>';
-  }
-
-  card.innerHTML = `
-    <div>
-      <span class="name-pill">${escapeHtml(name)}</span>
-      <span class="time">${escapeHtml(timeText)}</span>
-    </div>
-    <div class="content"></div>
-    ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="Post image" style="width:100%;max-height:300px;border-radius:12px;margin:12px 0;object-fit:cover;">` : ''}
-    ${reactionsHtml}
-    <div class="card-actions" style="margin-top:${Object.keys(reactions).length > 0 ? '8px' : '12px'};display:flex;gap:8px;align-items:center;">
-      <button class="card-action-emoji" style="background:transparent;border:none;padding:6px 8px;font-size:18px;cursor:pointer;border-radius:6px;transition:all 0.2s;" onclick="event.stopPropagation(); toggleEmojiPickerFeed('${postId}');"><img src="reaction.svg" alt="Add reaction" style="width:20px;height:20px;"></button>
-      <button class="card-action-btn" onclick="event.stopPropagation(); sharePostFeed('${postId}', event);" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
-        📤 Share
-      </button>
-      <button class="card-action-btn reply-btn" data-post-id="${escapeHtml(postId)}" onclick="event.stopPropagation();" style="flex:1;display:flex;align-items:center;gap:6px;justify-content:center;">
-        💬 <span id="reply-count-${postId}" style="font-weight:600;"></span>
-      </button>
-    </div>
-    <div class="emoji-picker-inline" id="picker-${postId}" style="display:none;margin-top:12px;padding:14px;background:linear-gradient(135deg,rgba(255,11,88,0.08),rgba(255,11,88,0.04));border-radius:12px;border:2px solid rgba(255,11,88,0.2);gap:8px;flex-wrap:wrap;justify-content:center;animation:slideIn 0.25s cubic-bezier(0.2, 0.6, 0.2, 1);backdrop-filter:blur(10px);">
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😂');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">😂</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '💀');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">💀</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '😭');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">😭</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '🔥');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">🔥</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '❤️');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">❤️</span>
-      <span class="emoji-option" onclick="event.stopPropagation(); addReactionFeed('${postId}', '👍');" style="font-size:28px;cursor:pointer;padding:8px 12px;border-radius:10px;transition:all 0.25s cubic-bezier(0.2,0.6,0.2,1);background:transparent;display:inline-block;" onmouseover="this.style.background='rgba(255,11,88,0.15);transform:scale(1.25) rotate(-5deg)';" onmouseout="this.style.background='transparent';transform:scale(1) rotate(0)';">👍</span>
-    </div>
-  `;
-  // set content as text to preserve newlines and avoid XSS
-  card.querySelector('.content').textContent = content;
-  
-  // Load reply count
-  loadReplyCountFeed(postId, card.querySelector(`#reply-count-${postId}`));
-
-  // Reactions are stored as one document per user, not inside the public post.
-  const liveReactionBar = document.createElement('div');
-  liveReactionBar.className = 'live-reactions';
-  liveReactionBar.style.cssText = 'display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;';
-  card.querySelector('.content').after(liveReactionBar);
-  onSnapshot(collection(db, 'posts', postId, 'reactions'), (reactionSnap) => {
-    const counts = Object.create(null);
-    reactionSnap.forEach((reactionDoc) => {
-      const emoji = reactionDoc.data().emoji;
-      if (emoji) counts[emoji] = (counts[emoji] || 0) + 1;
-    });
-    liveReactionBar.replaceChildren();
-    Object.entries(counts).forEach(([emoji, count]) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'card-action-btn';
-      chip.textContent = emoji + ' ' + count;
-      chip.addEventListener('click', (event) => {
-        event.stopPropagation();
-        window.addReactionFeed(postId, emoji);
-      });
-      liveReactionBar.appendChild(chip);
-    });
-  }, (error) => console.warn('Reaction listener:', error));
-  
-  // Make the entire card clickable to view post details
-  card.addEventListener('click', () => {
-    window.location.href = `post-detail.html?id=${postId}`;
-  });
-  
-  // Add reply button handler
-  const replyBtn = card.querySelector('.reply-btn');
-  if (replyBtn) {
-    replyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      window.location.href = `post-detail.html?id=${postId}`;
-    });
-  }
-
-  return card;
-}
-
-// Load reply count for feed
-async function loadReplyCountFeed(postId, countElement) {
-  try {
-    const repliesQuery = query(
-      collection(db, 'replies'),
-      where('postId', '==', postId)
-    );
-    const snapshot = await getDocs(repliesQuery);
-    const count = snapshot.size;
-    
-    if (count > 0) {
-      countElement.textContent = count;
-      countElement.style.display = 'inline';
-    }
-  } catch (err) {
-    console.warn('Could not load reply count:', err);
-  }
-}
-
-// Toggle emoji picker inline
-window.toggleEmojiPickerFeed = function(postId) {
-  const picker = document.getElementById(`picker-${postId}`);
-  if (picker) {
-    picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
-  }
-};
-
-// Add reaction from feed
-window.addReactionFeed = async function(postId, emoji) {
-  try {
-    const postRef = doc(db, 'posts', postId);
-    const postDoc = await getDoc(postRef);
-    const reactions = postDoc.data()?.reactions || {};
-
-    if (!reactions[emoji]) reactions[emoji] = {};
-
-    if (reactions[emoji][authUser.uid]) {
-      delete reactions[emoji][authUser.uid];
-      if (Object.keys(reactions[emoji]).length === 0) {
-        delete reactions[emoji];
-      }
-    } else {
-      reactions[emoji][authUser.uid] = true;
-    }
-
-    await updateDoc(postRef, { reactions });
-    
-    // Hide picker
-    const picker = document.getElementById(`picker-${postId}`);
-    if (picker) picker.style.display = 'none';
-  } catch (err) {
-    console.error('Error adding reaction:', err);
   }
 };
 
