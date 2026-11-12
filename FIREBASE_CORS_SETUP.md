@@ -52,36 +52,11 @@ Replace `https://yourdomain.com` with your actual domain.
 
 ---
 
-### Solution 2: Update Firebase Storage Rules
+### Solution 2: Keep Storage writes private
 
-Go to Firebase Console → Storage → Rules and ensure you have:
+Do not use unauthenticated public-write rules. Public uploads can be abused for storage and bandwidth costs.
 
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /music/{allPaths=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && 
-                   request.resource.size < 10 * 1024 * 1024; // 10 MB limit
-    }
-  }
-}
-```
-
-However, since you're using anonymous access (no authentication), use:
-
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /music/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.resource.size < 10 * 1024 * 1024; // 10 MB limit
-    }
-  }
-}
-```
+This repository currently uploads music through Cloudinary, not Firebase Storage. If Firebase Storage is introduced later, require Firebase Authentication and validate file size, content type, and ownership in Storage Rules. CORS configuration is not an access-control mechanism.
 
 ---
 
@@ -135,22 +110,9 @@ Add Cloudinary script to `music.html` head:
 
 ---
 
-## Quick Fix for Development (Localhost)
+## CORS is not security
 
-If you're using localhost and want a quick fix, update your CORS config to:
-
-```json
-[
-  {
-    "origin": ["*"],
-    "method": ["GET", "HEAD", "DELETE", "PUT", "POST", "OPTIONS"],
-    "responseHeader": ["*"],
-    "maxAgeSeconds": 3600
-  }
-]
-```
-
-⚠️ **Warning**: This allows CORS from any origin. Only use for development!
+Avoid wildcard CORS configurations in production. CORS controls which browser origins may read responses; it does not prevent direct API requests or replace authentication and authorization.
 
 ---
 
