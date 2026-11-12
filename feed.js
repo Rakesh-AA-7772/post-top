@@ -1,5 +1,5 @@
 // feed.js
-import { db } from './firebase.js';
+import { db, ensureAuth } from './firebase.js';
 import { generateShareImage, shareImage } from './share-utils.js';
 import {
   collection,
@@ -14,6 +14,7 @@ import {
   updateDoc
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+const authUser = await ensureAuth();
 const username = localStorage.getItem('username');
 if (!username) {
   window.location.href = 'name.html';
@@ -287,7 +288,7 @@ window.addReactionFeed = async function(postId, emoji) {
 
     if (!reactions[emoji]) reactions[emoji] = {};
 
-    if (reactions[emoji][username]) {
+    if (reactions[emoji][authUser.uid]) {
       delete reactions[emoji][username];
       if (Object.keys(reactions[emoji]).length === 0) {
         delete reactions[emoji];
