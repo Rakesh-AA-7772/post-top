@@ -273,9 +273,10 @@
   <div id="toast" class="toast">✨ Reply posted</div>
 
   <script type="module">
-    import { db, serverTimestamp } from './firebase.js';
+    import { db, serverTimestamp, ensureAuth } from './firebase.js';
     import { collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
+    const authUser = await ensureAuth();
     const username = localStorage.getItem('username');
     if (!username) {
       window.location.href = 'name.html';
@@ -351,6 +352,7 @@
       try {
         await addDoc(collection(db, 'replies'), {
           postId: replyingToId,
+          ownerUid: authUser.uid,
           name: username,
           content: text,
           timestamp: serverTimestamp()
