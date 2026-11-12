@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0f1419"><title>Notifications — WE WRITE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0f1419;--card:#1a1f26;--line:#2a3039;--pink:#ff0b58;--muted:#9ba4b2;--text:#eef1f5;font-family:Inter,system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,rgba(255,11,88,.09),transparent 42%),var(--bg);color:var(--text);min-height:100vh}
+header{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:16px max(18px,calc((100% - 920px)/2));background:rgba(15,20,25,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.brand{font:700 19px Poppins,sans-serif;letter-spacing:.18em;color:#42ed35;text-decoration:none}.brand span{color:var(--pink)}
+header a.back{color:var(--muted);text-decoration:none;font-size:13px}
+main{max-width:760px;margin:42px auto;padding:0 18px}.heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}h1{font:700 28px Poppins;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:6px}
+button{border:1px solid var(--line);background:#202630;color:var(--text);border-radius:10px;padding:10px 13px;cursor:pointer;font:600 12px Inter}button:hover{border-color:var(--pink);color:var(--pink)}
+.item{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin:10px 0;transition:.2s}.item.unread{border-color:rgba(255,11,88,.6);background:linear-gradient(100deg,rgba(255,11,88,.08),var(--card) 65%)}.dot{width:9px;height:9px;border-radius:50%;background:var(--pink);margin-top:6px;flex:none}.message{flex:1;line-height:1.5;font-size:14px}.meta{color:var(--muted);font-size:12px;margin-top:6px}.empty{text-align:center;padding:60px 20px;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:16px}
+@media(max-width:560px){main{margin:24px auto}.heading{align-items:flex-start}h1{font-size:23px}}
+</style></head><body><header><a class="brand" href="index.html">WE <span>WRITE</span></a><a class="back" href="index.html">← Back to feed</a></header>
+<main><div class="heading"><div><h1>Notifications</h1><div class="sub">Replies and reactions to your posts</div></div><button id="readAll">Mark all read</button></div><section id="items"><div class="empty">Loading notifications…</div></section></main>
+<script type="module">
+import {db,ensureAuth} from './firebase.js';
+import {collection,query,where,orderBy,limit,onSnapshot,doc,updateDoc,writeBatch} from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+const user=await ensureAuth();const root=document.getElementById('items');let latest=[];
+function safe(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const q=query(collection(db,'notifications'),where('recipientUid','==',user.uid),orderBy('createdAt','desc'),limit(60));
+onSnapshot(q,snap=>{latest=snap.docs;root.innerHTML='';if(snap.empty){root.innerHTML='<div class="empty">You are all caught up ✨</div>';return;}
+snap.forEach(d=>{const n=d.data(),el=document.createElement('article');el.className='item '+(!n.read?'unread':'');const verb=n.type==='reply'?'replied to your post':'reacted to your post';el.innerHTML='<span class="dot"></span><div class="message"><strong>'+safe(n.actorName)+'</strong> '+verb+'<div class="meta">'+(n.createdAt?.toDate?n.createdAt.toDate().toLocaleString():'Just now')+'</div></div><button>Open</button>';el.querySelector('button').addEventListener('click',async()=>{if(!n.read)await updateDoc(doc(db,'notifications',d.id),{read:true});location.href='post-detail.html?id='+encodeURIComponent(n.postId)});root.appendChild(el);});});
+document.getElementById('readAll').addEventListener('click',async()=>{const batch=writeBatch(db);latest.filter(d=>!d.data().read).forEach(d=>batch.update(doc(db,'notifications',d.id),{read:true}));if(latest.length)await batch.commit();});
+</script></body></html>
