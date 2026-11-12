@@ -1,6 +1,6 @@
 // service-worker.js - Progressive Web App offline support
 
-const CACHE_NAME = 'we-write-v1';
+const CACHE_NAME = 'we-write-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
