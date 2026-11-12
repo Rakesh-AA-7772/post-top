@@ -15,7 +15,8 @@ import {
   setDoc,
   deleteDoc,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  startAfter
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const authUser = await ensureAuth();
@@ -149,6 +150,8 @@ const emptyEl = document.getElementById('empty');
 const leaderboardEl = document.getElementById('leaderboard');
 const toastEl = document.getElementById('toast');
 const skeletonLoader = document.getElementById('skeleton-loader');
+const loadMoreButton = document.getElementById('loadMorePosts');
+let lastVisiblePost = null;
 
 // helper to escape basic HTML (name/time)
 function escapeHtml(s){
@@ -766,6 +769,8 @@ const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(60)
 let isFirstLoad = true;
 
 onSnapshot(q, snap => {
+  lastVisiblePost = snap.docs[snap.docs.length - 1] || null;
+  if (loadMoreButton) loadMoreButton.style.display = snap.size === 60 ? 'block' : 'none';
   if (isFirstLoad) {
     isFirstLoad = false;
     skeletonLoader.style.display = 'block';
@@ -826,3 +831,24 @@ onSnapshot(q, snap => {
   skeletonLoader.style.display = 'none';
   feedEl.innerHTML = '<div class="empty">Failed to load posts.</div>';
 });
+
+if (loadMoreButton) {
+  loadMoreButton.addEventListener('click', async () => {
+    if (!lastVisiblePost || loadMoreButton.disabled) return;
+    loadMoreButton.disabled = true;
+    loadMoreButton.textContent = 'Loading…';
+    try {
+      const olderQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), startAfter(lastVisiblePost), limit(40));
+      const olderSnap = await getDocs(olderQuery);
+      olderSnap.forEach((postDoc) => feedEl.appendChild(renderPost(postDoc)));
+      if (olderSnap.docs.length) lastVisiblePost = olderSnap.docs[olderSnap.docs.length - 1];
+      loadMoreButton.style.display = olderSnap.size < 40 ? 'none' : 'block';
+      loadMoreButton.textContent = 'Load older posts';
+    } catch (error) {
+      console.error('Could not load older posts:', error);
+      loadMoreButton.textContent = 'Try loading older posts again';
+    } finally {
+      loadMoreButton.disabled = false;
+    }
+  });
+}
