@@ -30,6 +30,15 @@ if (userNameEl) {
   userNameEl.textContent = username;
 }
 
+// Live unread notification count in the feed navigation.
+const notificationLink = document.querySelector('a[href="notifications.html"]');
+if (notificationLink) {
+  onSnapshot(query(collection(db, 'notifications'), where('recipientUid', '==', authUser.uid), where('read', '==', false)), (snap) => {
+    notificationLink.textContent = snap.size ? '🔔 ' + snap.size : '🔔';
+    notificationLink.setAttribute('aria-label', snap.size + ' unread notifications');
+  }, (error) => console.warn('Notification count unavailable:', error));
+}
+
 // User profile click handler
 const userProfile = document.getElementById('userProfile');
 if (userProfile) {
@@ -269,6 +278,33 @@ function renderPost(doc){
     window.location.href = `post-detail.html?id=${postId}`;
   });
   
+  // Report action
+  const reportButton = document.createElement('button');
+  reportButton.type = 'button';
+  reportButton.className = 'card-action-btn';
+  reportButton.textContent = '🚩 Report';
+  reportButton.addEventListener('click', async (event) => {
+    event.stopPropagation();
+    const reason = (prompt('Report reason: spam, harassment, inappropriate, or other') || '').trim().toLowerCase();
+    if (!['spam', 'harassment', 'inappropriate', 'other'].includes(reason)) {
+      if (reason) alert('Please enter spam, harassment, inappropriate, or other.');
+      return;
+    }
+    try {
+      await addDoc(collection(db, 'reports'), {
+        reporterUid: authUser.uid, postId, reason,
+        createdAt: serverTimestamp(), status: 'open'
+      });
+      toastEl.textContent = 'Report sent to moderators.';
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 2500);
+    } catch (error) {
+      console.error('Report failed:', error);
+      alert('Could not send report. Please try again.');
+    }
+  });
+  card.querySelector('.card-actions').appendChild(reportButton);
+
   // Add reply button handler
   const replyBtn = card.querySelector('.reply-btn');
   if (replyBtn) {
