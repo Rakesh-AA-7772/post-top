@@ -1,40 +1,56 @@
 # Firebase setup and security
 
-This app uses Firebase Anonymous Authentication. Visitors do not need a password, but Firebase assigns each browser installation a UID. The UID—not the editable display name in localStorage—is used for write ownership.
+WE WRITE uses Firebase Anonymous Authentication for normal visitors. Firebase assigns each browser installation a UID; that UID, not the editable display name in localStorage, is used for content ownership.
 
 ## 1. Enable Anonymous Authentication
-1. Open https://console.firebase.google.com/ and select project posttop-7155a.
+1. Open Firebase Console and select project posttop-7155a.
 2. Open Authentication → Sign-in method.
 3. Enable Anonymous and save.
-If this provider is not enabled, posting and replying will fail.
 
-## 2. Publish the Firestore rules
-The repository contains the rules in firestore.rules.
-1. Open Firestore Database → Rules in the Firebase Console.
-2. Replace the existing rules with the complete contents of firestore.rules.
-3. Review and click Publish.
+## 2. Publish the latest Firestore rules
+The repository's firestore.rules has been updated to support:
+- Public feed reads and UID-owned post/reply/music creation.
+- Separate per-user reaction documents at posts/{postId}/reactions/{uid}.
+- Private notifications, with each user limited to their own inbox.
+- User reports and admin-only moderation.
+- Admin custom claims for moderation and removal of content.
 
-The rules allow public reads, require an authenticated Firebase user to create content, bind new documents to that user's UID, validate basic field types and lengths, and prevent users from editing or deleting another user's content. Post reaction updates are restricted to the reactions field.
+Open Firestore Database → Rules, replace the complete ruleset with the current firestore.rules from main, review it, and click Publish. The rules you previously published do not automatically update when this repository changes. The new features will fail until you publish this latest version.
 
-Never use unrestricted rules such as allow read, write: if true. They allow anyone on the internet to modify or delete database content.
+Never use unrestricted rules such as allow read, write: if true.
 
-## 3. Existing content
-Existing posts, replies, and music documents created before this update do not have ownerUid. They remain publicly readable, but ownership-protected updates/deletes will not work for those legacy documents. New content will include ownerUid.
+## 3. Enable admin sign-in
+1. Open Authentication → Sign-in method.
+2. Enable Email/Password.
+3. Create or select a permanent administrator account.
+4. Follow ADMIN_SETUP.md to assign the Firebase custom claim admin: true using a trusted Firebase Admin SDK environment.
 
-## 4. Important limitations
+Do not grant admin privileges using localStorage, display names, frontend code, or a public admin-code document. Never put a service-account key in this repository.
+
+## 4. Deploy Firestore indexes
+The repository includes firestore.indexes.json for notification inbox, unread notification count, moderation reports and replies. Deploy it with the Firebase CLI or create the composite indexes from the links Firebase provides when a query reports a missing index.
+
+## 5. Existing content
+Older posts, replies and music records without ownerUid remain publicly readable, but their owners cannot use UID-based delete controls on those legacy documents. New documents include ownerUid. A migration would need to be performed in a trusted environment if you want to assign ownership to old records.
+
+Legacy reaction maps may still appear as historical reactions. New reactions are stored in per-user subcollection documents.
+
+## 6. Important limitations
 - Anonymous accounts are lightweight identities, not strong proof of a real person's identity. They can be replaced by clearing browser data or using another browser/device.
-- Firestore rules do not provide robust rate limiting or spam prevention. Add App Check and server-side moderation/rate controls before treating the app as production-hardened.
-- The browser-side 600KB image check is a usability limit; it is not a substitute for a trusted image-processing/upload backend.
-- Firebase web configuration values are public identifiers, not secrets. Security must come from Authentication, Firestore rules, and appropriate App Check enforcement.
-- Client-side post updates (including reactions) are currently disabled because the existing client rewrites the entire nested reaction map. This is intentionally restrictive: reactions will remain unavailable until they are migrated to per-user documents with rules that enforce UID ownership.
-- Music uses a public unsigned Cloudinary upload preset. Configure that preset in Cloudinary with strict resource type, MP3 format, file-size, folder, and quota restrictions; a public preset cannot securely prove uploader identity by itself.
+- Firestore rules do not provide robust rate limiting. Consider Firebase App Check and server-side abuse controls.
+- The browser-side image size check is a usability limit, not trusted server-side validation.
+- Music uploads use a public unsigned Cloudinary upload preset. Restrict the preset to MP3/audio, file size, folder and quota in Cloudinary; public unsigned uploads cannot securely prove uploader identity.
+- Notifications are currently written by the client after a reply/reaction. A determined client can attempt to forge an event. For stronger production integrity, generate notifications in a trusted Cloud Function.
 
-## 5. Admin, notifications and indexes\nSee ADMIN_SETUP.md for enabling Email/Password sign-in for the admin account and assigning the admin custom claim using a trusted Firebase Admin SDK environment. Never grant admin access in frontend code. Deploy firestore.indexes.json or create the composite indexes when Firebase prompts you.\n\n## 6. Quick verification
-1. Open the app in a fresh browser session.
-2. Choose a display name and create a post.
-3. In Firestore, confirm the new post has an ownerUid field.
-4. Create a reply and confirm it also has ownerUid.
-5. Test reactions and music upload/delete.
-6. Confirm the app cannot modify another user's ownerUid or delete another user's content.
+## 7. Verification checklist
+1. Open the app in a fresh browser session and confirm anonymous sign-in succeeds.
+2. Create a post and verify its ownerUid matches the signed-in Firebase UID.
+3. Add and remove reactions from two separate accounts; each account should control only its own reaction.
+4. Reply to another user's post and confirm the owner receives a notification.
+5. Confirm the notifications page shows only the signed-in user's notifications.
+6. Submit a report from the feed.
+7. Open admin.html as a normal anonymous user; access must be denied.
+8. Sign in with the permanent admin account; the moderation dashboard should open only when its token has admin: true.
+9. Confirm a normal user cannot read reports or delete another user's content.
 
-If posting fails, check that Anonymous Authentication is enabled and the published rules match firestore.rules.
+If posting or reacting fails, check that Anonymous Authentication is enabled and the latest firestore.rules has been published.
