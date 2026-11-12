@@ -289,12 +289,12 @@ window.addReactionFeed = async function(postId, emoji) {
     if (!reactions[emoji]) reactions[emoji] = {};
 
     if (reactions[emoji][authUser.uid]) {
-      delete reactions[emoji][username];
+      delete reactions[emoji][authUser.uid];
       if (Object.keys(reactions[emoji]).length === 0) {
         delete reactions[emoji];
       }
     } else {
-      reactions[emoji][username] = true;
+      reactions[emoji][authUser.uid] = true;
     }
 
     await updateDoc(postRef, { reactions });
